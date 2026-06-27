@@ -1,0 +1,3288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Venda de Motores Online</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+#login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#0d2e4a 0%,#185FA5 60%,#378ADD 100%);display:flex;align-items:center;justify-content:center;z-index:99999;}
+#login-box{background:#fff;border-radius:16px;padding:36px 40px;width:100%;max-width:380px;box-shadow:0 8px 40px rgba(0,0,0,.3);}
+#login-box h2{color:#0d2e4a;font-size:20px;font-weight:700;margin-bottom:6px;font-family:var(--font);}
+#login-box p{color:#666;font-size:13px;margin-bottom:24px;font-family:var(--font);}
+.login-field{display:flex;flex-direction:column;gap:4px;margin-bottom:14px;}
+.login-field label{font-size:11px;font-weight:700;color:#185FA5;text-transform:uppercase;letter-spacing:.04em;font-family:var(--font);}
+.login-field input{padding:10px 12px;border:1.5px solid #d0d8e0;border-radius:8px;font-size:14px;font-family:var(--font);outline:none;text-transform:none;}
+.login-field input:focus{border-color:#378ADD;}
+#login-btn{width:100%;padding:12px;background:#185FA5;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);margin-top:6px;}
+#login-btn:hover{background:#0d2e4a;}
+#login-error{color:#C0392B;font-size:12px;margin-top:8px;text-align:center;font-family:var(--font);min-height:18px;}
+#user-bar{display:flex;align-items:center;gap:8px;font-size:11px;color:rgba(255,255,255,.8);}
+#logout-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:11px;font-family:var(--font);}
+#logout-btn:hover{background:rgba(255,255,255,.25);}
+#sync-indicator{font-size:10px;color:rgba(255,255,255,.6);margin-left:4px;}
+:root{--bg:#fff;--bg2:#f0f8fd;--bg3:#e2f2fa;--text:#0d2e4a;--text2:#2e6a96;--text3:#6aaed6;--border:rgba(30,100,160,0.12);--border2:rgba(30,100,160,0.22);--r:8px;--rl:12px;--font:'Segoe UI',system-ui,sans-serif;}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1e2e;--bg2:#122840;--bg3:#0a1828;--text:#d6eaf8;--text2:#7fb9e0;--text3:#3a7aaa;--border:rgba(100,180,230,0.15);--border2:rgba(100,180,230,0.28);}}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg3);font-family:var(--font);color:var(--text);min-height:100vh;}
+.page{max-width:1200px;margin:0 auto;padding:1.25rem 1rem 3rem;}
+.topbar{background:linear-gradient(135deg,#0d2e4a 0%,#185FA5 60%,#378ADD 100%);border-radius:var(--rl);padding:14px 18px;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.topbar-left{display:flex;align-items:center;gap:12px;}
+.brand{font-size:20px;font-weight:700;color:#fff;letter-spacing:-.02em;}
+.brand-sub{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;text-transform:uppercase;letter-spacing:.04em;font-weight:500;}
+
+
+.filters-wrap{background:var(--bg);border:1.5px solid #378ADD;border-radius:var(--rl);padding:12px 14px 10px;margin-bottom:1.25rem;box-shadow:0 2px 8px rgba(55,138,221,.10);overflow:hidden;}
+.fw-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#185FA5;margin-bottom:10px;}
+.filters-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px 10px;align-items:flex-end;}
+.cg{display:flex;flex-direction:column;gap:3px;}
+.cg label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;font-weight:700;white-space:nowrap;}
+select,input{background:var(--bg);color:var(--text);border:.5px solid var(--border2);border-radius:var(--r);padding:4px 6px;font-family:var(--font);font-size:11px;outline:none;height:28px;}select{text-transform:uppercase;}select option{text-transform:uppercase;}
+select:focus,input:focus{border-color:#378ADD;}
+input:disabled::placeholder{color:var(--text3) !important;opacity:1 !important;}
+input[readonly]::placeholder{color:var(--text3) !important;opacity:1 !important;}
+input::-webkit-input-placeholder{color:var(--text3);}
+input:disabled::-webkit-input-placeholder{color:var(--text3) !important;opacity:1 !important;}
+button{background:var(--bg);color:var(--text);border:.5px solid var(--border2);border-radius:var(--r);padding:5px 12px;font-family:var(--font);font-size:12px;cursor:pointer;}
+button:hover{background:var(--bg2);}
+.filter-reset{font-size:11px;color:var(--text2);background:none;border:none;text-decoration:underline;cursor:pointer;margin-top:14px;padding:4px 0;}
+.af-bar{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.af-pill{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg2);color:var(--text2);border:.5px solid var(--border2);display:inline-flex;align-items:center;gap:4px;}
+.af-pill button{background:none;border:none;padding:0;font-size:11px;cursor:pointer;color:var(--text3);}
+.nav{display:flex;gap:4px;margin-bottom:1.25rem;background:transparent;padding:0;width:100%;box-sizing:border-box;}
+.nb{padding:10px 24px;font-size:14px;min-height:56px;font-weight:600;background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--r);cursor:pointer;color:var(--text2);display:inline-flex;align-items:center;gap:7px;font-family:var(--font);letter-spacing:.02em;transition:all .15s;;flex:1;justify-content:center;text-align:center;}
+.nb.active{box-shadow:0 4px 0 0 var(--nb-active-color, #000) !important;}
+.nb{opacity:0.82;}
+.nb:hover{opacity:0.95;}
+.nb.active,.nb.act{opacity:1 !important;outline:3px solid rgba(255,255,255,0.85);outline-offset:-4px;filter:brightness(1.1);}
+.nb-yellow.active,.nb-yellow.act{outline:3px solid rgba(0,0,0,0.85) !important;}
+.nb.act{background:linear-gradient(135deg,#0d2e4a,#185FA5,#378ADD);color:#fff;border-color:transparent;box-shadow:0 3px 10px rgba(55,138,221,.35);}.nb:hover:not(.act){background:var(--bg2);color:var(--text);border-color:#378ADD;}
+.summary-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:1.1rem;}
+.mc{background:linear-gradient(135deg,#185FA5,#378ADD);border-radius:var(--r);padding:12px 14px;text-align:center;}
+.mc-gray{background:linear-gradient(135deg,#4B5563,#6B7280);border-radius:var(--r);padding:12px 14px;text-align:center;}
+.mc-l{font-size:12px;color:rgba(255,255,255,.85);margin-bottom:5px;font-weight:500;}
+.mc-v{font-size:22px;font-weight:700;color:#fff;}
+.add-venda-btn{width:100%;padding:13px;font-size:14px;font-weight:700;background:#FFD43B;color:#1a1a18;border:none;border-radius:var(--rl);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.04em;box-shadow:0 3px 12px rgba(55,138,221,.4);margin-bottom:14px;font-family:var(--font);}
+.day-badge-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;min-height:24px;}
+.day-pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 9px;border-radius:20px;background:#E6F1FB;color:#185FA5;border:.5px solid #378ADD;cursor:pointer;font-weight:600;}
+.day-pill:hover{background:#d0e8f5;}
+.sales-wrap{background:var(--bg);border:1.5px solid #378ADD;border-radius:var(--rl);padding:14px;box-shadow:0 2px 8px rgba(55,138,221,.08);}
+.sales-title{font-size:11px;font-weight:700;color:#185FA5;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;}
+.ec{background:var(--bg2);border-radius:var(--r);padding:8px 9px;position:relative;border-left:3px solid var(--border2);margin-bottom:8px;}
+.ef{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;}
+.fg{display:flex;flex-direction:column;gap:2px;}
+.fg label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;}
+.fg input,.fg select{font-size:12px;padding:4px 7px;height:28px;width:100%;}
+.xb{position:absolute;top:6px;right:6px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;padding:0;line-height:1;}
+.xb:hover{color:#E24B4A;}
+
+
+
+.chart-card{background:var(--bg);border:1.5px solid #378ADD;border-radius:var(--rl);padding:16px;margin-bottom:14px;}
+.chart-title{font-size:14px;font-weight:700;color:#185FA5;margin-bottom:12px;text-transform:uppercase;letter-spacing:.04em;}
+.totcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:14px;}
+.tc{border-radius:var(--r);padding:10px 12px;border:.5px solid var(--border);background:var(--bg);}
+.tc-l{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;}
+.tc-n{font-size:20px;font-weight:700;color:var(--text);}
+.tc-s{font-size:11px;color:var(--text2);}
+.leg{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px;}
+.leg-item{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);}
+.leg-sq{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+.graf-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem;align-items:flex-end;justify-content:center;}
+.exp-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:1.25rem;padding-top:1rem;border-top:.5px solid var(--border);}
+
+.radio-group{display:flex;gap:6px;align-items:center;}
+.radio-opt{display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;color:var(--text2);padding:3px 8px;border-radius:20px;border:.5px solid var(--border2);background:var(--bg);transition:all .15s;}
+.radio-opt.selected{background:var(--bg2);color:var(--text);border-color:var(--border2);font-weight:600;}
+.radio-dot{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--text3);background:transparent;flex-shrink:0;transition:all .15s;}
+.radio-opt.selected .radio-dot{background:#378ADD;border-color:#378ADD;}
+.prec-table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed;}
+.prec-table tbody tr{height:36px;}.prec-table td{height:36px;box-sizing:border-box;}
+.prec-table th{background:#3483FA;color:#fff;padding:0 3px;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;white-space:normal;line-height:1.3;vertical-align:middle;height:44px;}
+.prec-table thead tr th:first-child{border-radius:8px 0 0 0;}
+.prec-table thead tr th:last-child{border-radius:0 8px 0 0;}
+.prec-table thead{height:50px;}
+.prec-table th:first-child{text-align:right;}
+.prec-table td{padding:4px 4px;border-bottom:.5px solid var(--border);vertical-align:middle;text-align:center;}
+.prec-table td:first-child{font-weight:700;font-size:11px;color:var(--text);white-space:nowrap;padding-right:6px;text-align:right;}
+.prec-input{width:70px;text-align:center;font-size:11px;font-weight:600;padding:3px 4px;border:1px solid var(--border2);border-radius:4px;background:var(--bg);color:#2e6a96;font-family:var(--font);}
+.prec-input::placeholder{color:#c0c8d0;}
+.prec-input[style*="color:#111"]{color:#111 !important;}
+.prec-input[style*="color:#111"]::placeholder{color:#bbb !important;}
+.prec-input[style*="color:#C0392B"]{color:#C0392B !important;}
+.prec-input[style*="color:#C0392B"]::placeholder{color:#f0a0a0 !important;}
+.prec-input[style*="color:#1D9E75"]{color:#1D9E75 !important;}
+.prec-input[style*="color:#1D9E75"]::placeholder{color:#a8d8c8 !important;}
+.prec-input[style*="color:#2e6a96"]::placeholder{color:#b0c8e0 !important;}
+.prec-input:focus{border-color:#378ADD;outline:none;}
+.prec-final{font-weight:700;color:#1D9E75;font-size:11px;text-align:center;min-width:80px;white-space:nowrap;}
+.delbtn{display:none;font-size:10px;padding:2px 9px;background:transparent;color:#C0392B;border:1.5px solid #C0392B;border-radius:5px;cursor:pointer;font-family:var(--font);font-weight:700;letter-spacing:.03em;}
+.delbtn:hover{background:#C0392B;color:#fff;}
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;display:flex;align-items:center;justify-content:center;}
+.confirm-box{background:#fff;border-radius:12px;padding:24px 28px;max-width:360px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.25);text-align:center;}
+.confirm-box h3{color:#C0392B;font-size:16px;margin:0 0 8px;font-family:var(--font);}
+.confirm-box p{color:#444;font-size:13px;margin:0 0 20px;font-family:var(--font);}
+.confirm-btns{display:flex;gap:10px;justify-content:center;}
+.confirm-btns button{padding:8px 22px;font-size:13px;font-weight:700;border-radius:7px;cursor:pointer;font-family:var(--font);border:none;}
+.confirm-yes{background:#C0392B;color:#fff;}
+.confirm-no{background:#eee;color:#333;}
+.toast{position:fixed;bottom:24px;right:24px;background:#3B6D11;color:#EAF3DE;padding:10px 16px;border-radius:var(--r);font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999;}
+.toast.show{opacity:1;}
+
+/* Zebra striping for all tab tables */
+#precos-table tbody tr:nth-child(odd) { background:#ffffff; }
+#precos-table tbody tr:nth-child(even) { background:#d9f5ec; }
+#sales-table tbody tr:nth-child(odd) { background:#ffffff; }
+#sales-table tbody tr:nth-child(even) { background:#e5e7eb; }
+#imp-table tbody tr:nth-child(odd),
+#imp-me-table tbody tr:nth-child(odd) { background:#ffffff; }
+#imp-table tbody tr:nth-child(even),
+#imp-me-table tbody tr:nth-child(even) { background:#fde8e8; }
+#prec-table tbody tr:nth-child(odd),
+#prec-me-table tbody tr:nth-child(odd) { background:#ffffff; }
+#prec-table tbody tr:nth-child(even),
+#prec-me-table tbody tr:nth-child(even) { background:#fff9c4; }
+
+/* REGISTROS gray theme */
+body[data-nav="reg"] .filters-wrap{border-color:#6B7280;}
+body[data-nav="reg"] .day-pill{background:#F3F4F6;color:#374151;border-color:#9CA3AF;}
+body[data-nav="reg"] .day-pill:hover{background:#D1D5DB;}
+body[data-nav="reg"] #search-reg{border-color:#9CA3AF !important;outline-color:#9CA3AF !important;}
+body[data-nav="reg"] .filter-reset{color:#6B7280 !important;}
+
+/* Uniform row height across all tab tables */
+#imp-table tbody tr, #imp-me-table tbody tr, 
+#prec-table tbody tr, #prec-me-table tbody tr {height:36px;}
+#imp-table td, #imp-me-table td,
+#prec-table td, #prec-me-table td {height:36px;box-sizing:border-box;}
+</style>
+</head>
+<body>
+<div id="login-screen">
+  <div id="login-box">
+    <h2>🚤 Venda de Motores</h2>
+    <p>Grupo Paraqueda Náutica — faça login para continuar</p>
+    <div class="login-field">
+      <label>E-mail</label>
+      <input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email"/>
+    </div>
+    <div class="login-field">
+      <label>Senha</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <button id="login-btn" onclick="fazerLogin()">Entrar</button>
+    <div id="login-error"></div>
+  </div>
+</div>
+<div class="page">
+  <div class="topbar" style="flex-direction:row;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;">
+      <div id="user-bar" style="display:none;">
+        <span id="user-email-display"></span>
+        <button id="logout-btn" onclick="fazerLogout()">Sair</button>
+        <span id="sync-indicator"></span>
+      </div>
+      <div class="topbar-left">
+        <img src="data:image/png;base64,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" alt="Paraqueda Náutica" style="height:50px;border-radius:6px;"/>
+        <div>
+          <div class="brand">VENDA DE MOTORES ONLINE</div>
+          <div class="brand-sub">Grupo Paraqueda Náutica</div>
+        </div>
+      </div>
+    </div>
+    <div id="add-venda-bar" style="display:none;align-items:center;">
+      <button id="btn-add-top" onclick="addVendaTop()" style="padding:6px 20px;font-size:12px;font-weight:700;background:#fff;color:#1A3A6B;border:2px solid #1A3A6B;border-radius:7px;cursor:pointer;letter-spacing:.04em;font-family:var(--font);height:36px;display:inline-flex;align-items:center;justify-content:center;">+ ADICIONAR VENDA</button>
+    </div>
+  </div>
+
+  <>
+
+  <div class="nav">
+    <button class="nb active" id="nb-graf" onclick="switchNav('graf')" style="background:#1A5EA8;color:#fff;border-color:#1A5EA8;--nb-active-color:#1A5EA8;">GRÁFICOS</button>
+    <button class="nb" id="nb-reg" onclick="switchNav('reg')" style="background:#6B7280;color:#fff;border-color:#6B7280;">REGISTROS</button>
+    <button class="nb" id="nb-precos" onclick="switchNav('precos')" style="background:#1D9E75;color:#fff;border-color:#1D9E75;">PREÇOS<br>MOTORES</button>
+    <button class="nb" id="nb-imp" onclick="switchNav('imp')" style="background:#C0392B;color:#fff;border-color:#C0392B;">IMPOSTOS<br>LUCRO REAL</button>
+    <button class="nb" id="nb-prec" onclick="switchNav('prec')" style="background:#FFE600;color:#333;border-color:#FFE600;">ML<br>LUCRO REAL</button>
+  <button class="nb" id="nb-imp-me" onclick="switchNav('imp-me')" style="background:#C0392B;color:#fff;border-color:#C0392B;">IMPOSTOS<br>MICRO<br>EMPRESA</button>
+  <button class="nb" id="nb-ml-me" onclick="switchNav('ml-me')" style="background:#FFE600;color:#333;border-color:#FFE600;">ML<br>MICRO<br>EMPRESA</button>
+  </div>
+
+  <div class="filters-wrap" style="display:none;">
+    <div class="filters-grid">
+      <div class="cg"><label>Loja</label><select id="f-loja" onchange="filters.loja=this.value;updDynFilters();applyFilters()"><option value="">TODOS</option></select></div>
+      <div class="cg"><label>Mês</label>
+        <select id="f-mes" onchange="filters.mes=this.value;updDynFilters();applyFilters()" style="min-width:90px;"><option value="">TODOS</option></select>
+      </div>
+      <div class="cg"><label>Dia</label>
+        <select id="f-dia" onchange="filters.dia=this.value;updDynFilters();applyFilters()" style="min-width:60px;"><option value="">TODOS</option></select>
+      </div>
+      <div class="cg"><label>Motor</label><select id="f-motor" onchange="filters.motor=this.value;updDynFilters();applyFilters()"><option value="">TODOS</option></select></div>
+      <div class="cg"><label>Outros Itens</label><select id="f-outros" onchange="filters.outros=this.value;updDynFilters();applyFilters()"><option value="">TODOS</option></select></div>
+      
+      <div class="cg"><label>Mkt Place</label><select id="f-mkt" onchange="filters.mkt=this.value;updDynFilters();applyFilters()"><option value="">TODOS</option></select></div>
+      <div class="cg"><label>Publicidade</label><select id="f-pub" onchange="filters.pub=this.value;updDynFilters();applyFilters()"><option value="">TODOS</option><option value="SIM">SIM</option><option value="NÃO">NÃO</option><option value="__none__">NENHUM</option></select></div>
+      <div class="cg"><label>Tipo de Anúncio</label><select id="f-tipo_anuncio" onchange="filters.tipo_anuncio=this.value;updDynFilters();applyFilters()"><option value="">TODOS</option></select></div>
+      <div class="cg"><label>Observação</label>
+        <select id="f-obs" onchange="applyFilters()"><option value="">TODOS</option><option value="com_obs">Com observação</option><option value="sem_obs">Sem observação</option><option value="__none__">NENHUM</option></select>
+      </div>
+      <div class="cg"><label>Cidade</label><select id="f-cidade" onchange="filters.cidade=this.value;updDynFilters();applyFilters()"><option value="">TODOS</option></select></div>
+      <div class="cg"><label>Estado</label><select id="f-estado" onchange="filters.estado=this.value;updDynFilters();applyFilters()"><option value="">TODOS</option></select></div>
+      <div class="cg"><label>Região</label><select id="f-regiao" onchange="filters.regiao=this.value;updDynFilters();applyFilters()"><option value="">TODOS</option></select></div>
+      <div class="cg"><label>Entregue</label><select id="f-entregue" onchange="filters.entregue=this.value;updDynFilters();applyFilters()"><option value="sim_nao" selected>SIM + NÃO</option><option value="">TODOS</option><option value="sim">SIM</option><option value="nao">NÃO</option><option value="devolvido">DEVOLVIDO</option></select></div>
+      <div class="cg"><label>Garantia Ativada</label><select id="f-garantia" onchange="filters.garantia=this.value;updDynFilters();applyFilters()"><option value="">TODOS</option><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;flex-wrap:wrap;gap:4px;">
+      <div class="af-bar" id="af-bar" style="margin:0;flex:1;min-width:0;"></div>
+      <button class="filter-reset" onclick="resetFilters()" style="flex-shrink:0;">Limpar filtros</button>
+    </div>
+  </div>
+
+  
+
+  <div style="margin-bottom:10px;display:none;">
+    <input type="text" id="search-reg" oninput="applySearch()" placeholder="Buscar por numero da venda, comprador, motor, cidade, estado ou SKU..." style="width:100%;padding:7px 12px;font-size:13px;border:1.5px solid #378ADD;border-radius:var(--r);background:var(--bg);color:var(--text);font-family:var(--font);cursor:text;pointer-events:all;"/>
+  </div>
+
+  <div id="vw-reg" style="display:none;" class="">
+    <div class="summary-bar" id="summary-bar"></div>
+    <div id="add-btn-wrap" style="margin-bottom:12px;"></div>
+    <div class="day-badge-row" id="day-badge-row"></div>
+    <div id="new-form-area"></div>
+    <div id="sales-area"></div>
+    <div class="exp-row">
+      <button onclick="exportXLSX()">Exportar Excel</button>
+      <button onclick="exportBackup()" style="background:#1D9E75;color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-family:var(--font);font-weight:600;">💾 Exportar Backup</button>
+      <button onclick="document.getElementById('imp-backup').click()" style="background:#378ADD;color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-family:var(--font);font-weight:600;">📂 Importar Backup</button>
+      <input type="file" id="imp-backup" accept=".json" style="display:none" onchange="importBackup(this)">
+      <button onclick="exportTudo()" style="background:#1A3A6B;color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-family:var(--font);font-weight:600;">🗄️ Exportar Tudo</button>
+      <button onclick="document.getElementById('imp-tudo').click()" style="background:#1A3A6B;color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-family:var(--font);font-weight:600;">📥 Importar Tudo</button>
+      <input type="file" id="imp-tudo" accept=".json" style="display:none" onchange="importTudo(this)">
+    </div>
+  </div>
+
+  <div id="vw-graf" style="display:block;">
+    <div class="graf-filters">
+      <div class="cg"><label>Loja</label>
+        <select id="gf-loja" onchange="buildGrafMotors();renderGraf()">
+          <option value="">TODOS</option>
+        </select>
+      </div>
+      <div class="cg"><label>Mês</label>
+        <select id="gf-mes" onchange="buildGrafMotors();renderGraf()">
+          <option value="">TODOS</option>
+        </select>
+      </div>
+      <div class="cg"><label>Dia</label>
+        <select id="gf-dia" onchange="renderGraf()">
+          <option value="">TODOS</option>
+        </select>
+      </div>
+      <div class="cg"><label>Motor</label>
+        <select id="gf-motor" onchange="buildGrafMotors();renderGraf()">
+          <option value="">TODOS</option>
+        </select>
+      </div>
+      <div class="cg"><label>Metrica</label>
+        <select id="gf-metrica" onchange="renderGraf()">
+          <option value="qtd">Unidades vendidas</option>
+          <option value="val">Receita (R$)</option>
+          <option value="vr">Valor de Retorno (R$)</option>
+          <option value="pct">% Retorno sobre Receita</option>
+        </select>
+      </div>
+      <div class="cg"><label>Agrupar por</label>
+        <select id="gf-grupo" onchange="renderGraf()">
+          <option value="">NENHUM</option>
+          <option value="loja">Loja</option>
+          <option value="motor">Motor</option>
+          <option value="mkt">Mkt Place</option>
+          <option value="tipo_anuncio">Tipo de Anúncio</option>
+          <option value="pub">Publicidade</option>
+          <option value="dia">Dia</option>
+          <option value="mes">Mês</option>
+          <option value="outros_itens">Outros Itens</option>
+          <option value="cidade">Cidade</option>
+          <option value="estado">Estado</option>
+          <option value="regiao">Região</option>
+          <option value="obs">Observação</option>
+        </select>
+      </div>
+      <div class="cg"><label>Agrupar por</label>
+        <select id="gf-split" onchange="renderGraf()">
+          <option value="">NENHUM</option>
+          <option value="loja">Loja</option>
+          <option value="motor">Motor</option>
+          <option value="mkt">Mkt Place</option>
+          <option value="tipo_anuncio">Tipo de Anúncio</option>
+          <option value="pub">Publicidade</option>
+          <option value="dia">Dia</option>
+          <option value="mes">Mês</option>
+          <option value="outros_itens">Outros Itens</option>
+          <option value="cidade">Cidade</option>
+          <option value="estado">Estado</option>
+          <option value="regiao">Região</option>
+          <option value="obs">Observação</option>
+        </select>
+      </div>
+      <div class="cg"><label>Tipo</label>
+        <select id="gf-tipo" onchange="renderGraf()">
+          <option value="bar">Barras</option>
+          <option value="pie">Pizza</option>
+        </select>
+      </div>
+      <div class="cg"><label>Entrega</label>
+        <select id="gf-entrega" onchange="renderGraf()">
+          <option value="todos">TODOS</option>
+          <option value="sim">Sim</option>
+          <option value="nao">Não</option>
+          <option value="devolvido">Devolvido</option>
+          <option value="sim_nao" selected>Sim + A Caminho</option>
+        </select>
+      </div>
+      <div class="cg" style="align-self:flex-end;padding-bottom:6px;">
+        <a href="#" onclick="clearGrafFilters();return false;" style="font-size:12px;color:var(--text2);text-decoration:underline;white-space:nowrap;">Limpar filtros</a>
+      </div>
+    </div>
+    <div class="totcards" id="totcards"></div>
+    <div class="chart-card">
+      <div class="chart-title" id="graf-titulo">Unidades por loja</div>
+      <div id="graf-leg" class="leg"></div>
+      <div style="position:relative;width:100%;height:360px;">
+        <canvas id="grafChart"></canvas>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end;">
+        <button onclick="exportChart('png')" style="font-size:11px;padding:5px 12px;background:var(--bg2);color:var(--text2);border:.5px solid var(--border2);border-radius:6px;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:4px;"><i class="ti ti-photo"></i> PNG</button>
+        <button onclick="exportChart('jpg')" style="font-size:11px;padding:5px 12px;background:var(--bg2);color:var(--text2);border:.5px solid var(--border2);border-radius:6px;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:4px;"><i class="ti ti-photo"></i> JPG</button>
+        <button onclick="exportChart('pdf')" style="font-size:11px;padding:5px 12px;background:var(--bg2);color:var(--text2);border:.5px solid var(--border2);border-radius:6px;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:4px;"><i class="ti ti-file-type-pdf"></i> PDF</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="vw-prec" style="display:none;">
+  <div id="prec-table" style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;"></div>
+</div>
+  <div id="vw-precos" style="display:none;">
+    <div id="precos-table" style="overflow-x:auto;border-radius:8px;overflow:hidden;max-width:500px;margin:0 auto;"></div>
+  </div>
+
+  <div id="vw-imp" style="display:none;">
+    <div id="imp-table" style="overflow-x:auto;border-radius:8px;overflow:hidden;"></div>
+  <div style="text-align:center;margin-top:16px;display:flex;gap:12px;justify-content:center;">
+    <button onclick="document.getElementById('imp-me-regras-modal').style.display='block'" style="background:#C0392B;color:#fff;border:none;padding:9px 22px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;font-family:var(--font);letter-spacing:.03em;">📋 Ver Regras de Cálculo</button>
+
+  </div>
+  </div>
+  <!-- Modal Regras IMPOSTOS -->
+  <div id="imp-regras-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9999;overflow-y:auto;">
+    <div style="background:#fff;max-width:620px;margin:40px auto;border-radius:12px;padding:28px 30px;position:relative;font-family:var(--font);">
+      <button onclick="document.getElementById('imp-regras-modal').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#666;">✕</button>
+      <h2 style="color:#C0392B;margin:0 0 18px;font-size:16px;">📋 Regras de Cálculo — Impostos Lucro Real</h2>
+      <div style="font-size:13px;line-height:1.8;color:#333;">
+
+        <p>💰 <strong>Passo 1 — Preço de Compra</strong><br>
+        Parta do <em>Preço de Compra</em> do motor. Exemplo: <strong>R$ 10.000,00</strong></p>
+
+        <p>🏷️ <strong>Passo 2 — DESC Lista Mercury</strong><br>
+        Aplique o desconto da coluna <em>DESC Lista Mercury</em> sobre o Preço de Compra.<br>
+        Com 15% de desconto: R$ 10.000,00 × 0,85 = <strong>R$ 8.500,00</strong></p>
+
+        <p>➗ <strong>Passo 3 — Desconto IPI</strong><br>
+        Divida os R$ 8.500,00 pelo valor da coluna <em>Desconto IPI</em>.<br>
+        Dividindo por 1,05: R$ 8.500,00 ÷ 1,05 = <strong>R$ 8.095,24</strong><br>
+        <em>Este é o valor base para o cálculo do ICMS.</em></p>
+
+        <p>📊 <strong>Passo 4 — ICMS</strong><br>
+        Aplique o percentual da coluna <em>ICMS</em> sobre o resultado do Passo 3.<br>
+        Com 12%: R$ 8.095,24 × 12% = <strong>R$ 971,43</strong></p>
+
+        <p>📊 <strong>Passo 5 — PIS/COFINS</strong><br>
+        Aplique o percentual da coluna <em>PIS/COFINS</em> sobre o valor do <strong>Passo 2</strong> (R$ 8.500,00) — não sobre o Passo 3.<br>
+        Com 9,25%: R$ 8.500,00 × 9,25% = <strong>R$ 786,25</strong></p>
+
+        <p>➕ <strong>Passo 6 — ICMS + PIS/COFINS</strong><br>
+        Some os resultados dos Passos 4 e 5.<br>
+        R$ 971,43 + R$ 786,25 = <strong>R$ 1.757,68</strong></p>
+
+        <p>✅ <strong>Passo 7 — Custo Final</strong><br>
+        Subtraia ICMS e PIS/COFINS do valor do <strong>Passo 2</strong> (R$ 8.500,00).<br>
+        R$ 8.500,00 − R$ 971,43 − R$ 786,25 = <strong>R$ 6.742,32</strong></p>
+
+        <p>🔧 <strong>Passo 8 — Mão de obra da revisão</strong><br>
+        Adicione o valor da revisão do motor ao Custo Final (Passo 7). Este valor varia conforme o modelo — cada motor tem sua própria complexidade de revisão.<br>
+        Ex.: Custo Final R$ 6.742,32 + Revisão R$ 30,00 = <strong>R$ 6.772,32</strong></p>
+
+        <p>💰 <strong>Passo 9 — Preço de Partida com lucro desejado</strong><br>
+        O lucro é calculado sobre o próprio Preço de Partida (preço final de venda). Por isso, divida o Custo Final revisado (Passo 8) por <em>(1 − lucro%)</em> para encontrar o preço que garante o lucro desejado.<br>
+        Ex.: Preço de Partida = R$ 6.772,32 ÷ (1 − 10%) = R$ 6.772,32 ÷ 0,90 = <strong>R$ 7.524,80</strong><br>
+        Verificação: R$ 7.524,80 × 10% = R$ 752,48 de lucro → R$ 7.524,80 − R$ 752,48 = R$ 6.772,32 ✓</p>
+
+        <p>🛒 <strong>Passo 10 — Preço final nos marketplaces</strong><br>
+        O Preço de Partida (Passo 9) somado ao frete e dividido pela complementar da comissão do marketplace resulta no preço final de venda.<br>
+        Ex.: (R$ 7.929,17 + Frete) ÷ (1 − comissão%) = <strong>Preço Clássico / Preço Premium</strong><br>
+        <strong style="color:#C0392B;text-decoration:underline;">⚠️ ESTE PREÇO PODERÁ SER ALTERADO, MAS SOMENTE SOB SUPERVISÃO DO WELLINGTON.</strong></p>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA LUCRO REAL ME -->
+  <div id="vw-imp-me" style="display:none;">
+    <div id="imp-me-table" style="overflow-x:auto;border-radius:8px;overflow:hidden;"></div>
+    <div style="text-align:center;margin-top:16px;">
+      <button onclick="document.getElementById('imp-me-regras-modal').style.display='block'" style="background:#C0392B;color:#fff;border:none;padding:9px 22px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;font-family:var(--font);letter-spacing:.03em;">📋 Ver Regras de Cálculo</button>
+    </div>
+  </div>
+
+  <!-- ABA ML ME -->
+  <div id="vw-ml-me" style="display:none;">
+    <div id="prec-me-table" style="overflow-x:auto;border-radius:8px;overflow:hidden;"></div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const MOTORS=['Mercury 3.3hp','Mercury 5hp','Mercury 5hp L','Mercury 8hp','Mercury 8hp L','Mercury 9.9hp','Mercury 15hp','Mercury 30hp M','Mercury 30hp E','Yamaha 4hp','Yamaha 15hp','Yamaha 30hp M','Yamaha 30hp E'];
+const ALL_MONTHS=[{n:4,l:'Abril'},{n:5,l:'Maio'},{n:6,l:'Junho'},{n:7,l:'Julho'},{n:8,l:'Agosto'},{n:9,l:'Setembro'},{n:10,l:'Outubro'},{n:11,l:'Novembro'},{n:12,l:'Dezembro'}];
+const LOJAS=['SP','SC','AM','JESU','PESCA'];
+const LC={SP:'#378ADD',SC:'#1D9E75',AM:'#BA7517',JESU:'#7F77DD',PESCA:'#D4537E'};
+const ESTADOS=['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
+const FIELDS=[
+  {k:'data_venda',l:'Data da Venda'},
+  {k:'loja',l:'Loja',s:['','SP','SC','AM','JESU','PESCA']},
+  {k:'mkt',l:'Mkt Place da Venda',s:['','Mercado Livre','Shopee','Magalu','Tiktok','Amazon','Nuvem Shop']},
+  {k:'nv',l:'Nº Venda Mkt Place'},
+  {k:'motor',l:'Motor',s:[''].concat(MOTORS)},
+  {k:'outros_itens',l:'Outros Itens',s:['','NENHUM','ÓLEO','CARRINHO']},
+  {k:'sku',l:'SKU'},
+  {k:'tipo_anuncio',l:'Tipo de Anúncio',s:['','CLÁSSICO','PREMIUM','PADRÃO']},
+  {k:'pub',l:'Venda por Publicidade',s:['','SIM','NÃO']},
+  {k:'vv',l:'Valor de Venda'},
+  {k:'vr',l:'Valor de Retorno',helper:true},
+  {k:'nota_fiscal',l:'Nota Fiscal',opt:true},
+  {k:'serial',l:'Serial'},
+  {k:'comprador',l:'Comprador'},
+  {k:'cidade',l:'Cidade'},
+  {k:'estado',l:'Estado',s:[''].concat(ESTADOS)},
+  {k:'regiao',l:'Região',auto:true},
+  {k:'data_entrega',l:'Data da Entrega',type:'entrega'},
+  {k:'garantia',l:'Garantia Ativada',s:['','SIM','NÃO']},
+  {k:'obs',l:'Observação',obs:true},
+];
+const WD=['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
+const CC=['#378ADD','#1D9E75','#BA7517','#7F77DD','#D4537E','#639922','#D85A30','#888780','#534AB7','#993C1D'];
+const REGIAO={AC:'NORTE',AM:'NORTE',AP:'NORTE',PA:'NORTE',RO:'NORTE',RR:'NORTE',TO:'NORTE',AL:'NORDESTE',BA:'NORDESTE',CE:'NORDESTE',MA:'NORDESTE',PB:'NORDESTE',PE:'NORDESTE',PI:'NORDESTE',RN:'NORDESTE',SE:'NORDESTE',DF:'CENTRO-OESTE',GO:'CENTRO-OESTE',MT:'CENTRO-OESTE',MS:'CENTRO-OESTE',ES:'SUDESTE',MG:'SUDESTE',RJ:'SUDESTE',SP:'SUDESTE',PR:'SUL',RS:'SUL',SC:'SUL'};
+function getRegiao(estado){return REGIAO[estado]||'';}
+const TODAY=new Date();
+const TM=TODAY.getMonth()+1;
+const TD=TODAY.getDate();
+const MONTHS=ALL_MONTHS.filter(function(m){return m.n<=TM;});
+
+var curMonth=null;
+var curDay=null;
+var curNav='graf';
+var md={};
+var filters={mes:'',dia:'',loja:'',motor:'',mkt:'',pub:'',tipo_anuncio:'',cidade:'',estado:'',regiao:'',obs:'',entregue:'sim_nao',garantia:''};
+var viewDay=null;
+var searchQ='';
+
+var gc=null;
+Chart.register(ChartDataLabels);
+
+function maxDay(m){if(!m)return 0;var t=new Date(2026,m,0).getDate();return m===TM?Math.min(TD,t):t;}
+function dim(m){return new Date(2026,m,0).getDate();}
+function sk(m){return 'pnv3:'+m;}
+var _regCache={};
+function lm(m){
+  if(_regCache[m]!==undefined)return _regCache[m];
+  try{var r=localStorage.getItem(sk(m));var d=r?JSON.parse(r):{};_regCache[m]=d;return d;}
+  catch(e){return {};}
+}
+function sm(m,d){_regCache[m]=d;try{localStorage.setItem(sk(m),JSON.stringify(d));var s=document.getElementById('sst');if(s){s.textContent='Salvo';setTimeout(function(){s.textContent='';},1500);}}catch(e){}}
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2000);}
+
+function matchSearch(e){
+  if(!searchQ)return true;
+  var q=searchQ.toLowerCase();
+  var fields=[e.nv,e.comprador,e.motor,e.cidade,e.estado,e.sku];
+  return fields.some(function(v){return v&&v.toLowerCase().indexOf(q)>=0;});
+}
+function matchFor(e, skipField){
+  var saved=filters[skipField];
+  filters[skipField]='';
+  var r=match(e);
+  filters[skipField]=saved;
+  return r;
+}
+function match(e){
+  if(filters.loja){if(filters.loja==='__none__'){if(e.loja&&e.loja.trim())return false;}else if((e.loja||'')!==filters.loja)return false;}
+  if(filters.motor){if(filters.motor==='__none__'){if(e.motor&&e.motor.trim())return false;}else if((e.motor||'')!==filters.motor)return false;}
+  if(filters.mkt){if(filters.mkt==='__none__'){if(e.mkt&&e.mkt.trim())return false;}else if((e.mkt||'')!==filters.mkt)return false;}
+  if(filters.pub&&(e.pub||'')!==filters.pub)return false;
+  if(filters.tipo_anuncio&&(e.tipo_anuncio||'')!==filters.tipo_anuncio)return false;
+  if(filters.cidade){if(filters.cidade==='__none__'){if(e.cidade&&e.cidade.trim())return false;}else if((e.cidade||'').toLowerCase().indexOf(filters.cidade.toLowerCase())<0)return false;}
+  if(filters.estado){if(filters.estado==='__none__'){if(e.estado&&e.estado.trim())return false;}else if((e.estado||'')!==filters.estado)return false;}
+  if(filters.regiao){if(filters.regiao==='__none__'||filters.regiao==='NENHUM'){if(e.estado&&e.estado.trim())return false;}else if(getRegiao(e.estado||'')!==filters.regiao)return false;}
+  if(filters.obs==='com_obs'&&!(e.obs&&e.obs.trim()))return false;
+  if(filters.obs==='sem_obs'&&(e.obs&&e.obs.trim()))return false;
+  if(filters.outros&&(e.outros_itens||'')!==filters.outros)return false;
+  if(filters.garantia){if(filters.garantia==='__none__'){if(e.garantia&&e.garantia.trim())return false;}else if((e.garantia||'')!==filters.garantia)return false;}
+  if(filters.entregue){
+    var isDev=e.data_entrega==='DEVOLVIDO';
+    var isNao=!e.data_entrega||e.data_entrega==='NAO_ENTREGOU';
+    var isSim=!isDev&&!isNao;
+    if(filters.entregue==='sim_nao'&&isDev)return false;
+    if(filters.entregue==='sim'&&!isSim)return false;
+    if(filters.entregue==='nao'&&!isNao)return false;
+    if(filters.entregue==='devolvido'&&!isDev)return false;
+  }
+  if(!matchSearch(e))return false;
+  return true;
+}
+function applySearch(){
+  var el=document.getElementById('search-reg');
+  searchQ=el?el.value:'';
+  updSummary();renderBadges();renderSales();
+  if(curNav==='graf')renderGraf();
+}
+function hasF(){return filters.loja||filters.motor||filters.mkt||filters.cidade||filters.estado;}
+function applyFilters(){
+  filters.mes=document.getElementById('f-mes').value;
+  filters.dia=document.getElementById('f-dia').value;
+  viewDay=parseInt(filters.dia)||null;
+  filters.loja=document.getElementById('f-loja').value;
+  filters.motor=document.getElementById('f-motor').value;
+  filters.outros=document.getElementById('f-outros')?document.getElementById('f-outros').value:'';
+  filters.entregue=document.getElementById('f-entregue')?document.getElementById('f-entregue').value:'';
+  filters.garantia=document.getElementById('f-garantia')?document.getElementById('f-garantia').value:'';
+  filters.mkt=document.getElementById('f-mkt').value;
+  filters.pub=document.getElementById('f-pub').value;
+  filters.tipo_anuncio=document.getElementById('f-tipo_anuncio').value;
+  filters.cidade=document.getElementById('f-cidade').value;
+  filters.estado=document.getElementById('f-estado').value;
+  filters.regiao=document.getElementById('f-regiao').value;
+  filters.obs=document.getElementById('f-obs').value;
+  updSummary();renderBadges();renderSales();renderPills();
+  if(curNav==='graf')renderGraf();
+}
+function resetFilters(){
+  filters={loja:'',motor:'',mkt:'',cidade:'',estado:'',entregue:'sim_nao',garantia:''};
+  ['f-mes','f-dia','f-loja','f-motor','f-mkt','f-pub','f-tipo_anuncio','f-cidade','f-estado','f-obs','f-regiao'].forEach(function(id){document.getElementById(id).value='';});
+  var fe=document.getElementById('f-entregue');if(fe)fe.value='sim_nao';
+  var fg2=document.getElementById('f-garantia');if(fg2)fg2.value='';
+  applyFilters();
+}
+function renderPills(){
+  var lb={mes:'Mês',dia:'Dia',loja:'Loja',motor:'Motor',mkt:'Mkt',pub:'Publicidade',tipo_anuncio:'Tipo Anúncio',cidade:'Cidade',estado:'Estado',regiao:'Região',obs:'Obs',entregue:'Entregue',garantia:'Garantia',outros:'Outros Itens'};
+  var h='';Object.keys(filters).forEach(function(k){if(!filters[k])return;if(!lb[k])return;if(k==='entregue'&&filters[k]==='sim_nao')return;h+='<span class="af-pill">'+lb[k]+': '+filters[k]+'<button onclick="cf(this.dataset.k)" data-k="'+k+'">x</button></span>';});
+  document.getElementById('af-bar').innerHTML=h;
+}
+function cf(k){filters[k]='';document.getElementById('f-'+k).value='';applyFilters();}
+function updDynFilters(){
+  var months=MONTHS.map(function(m){return m.n;});
+  var months2=months;
+  var lo={},mo={},mk={},ci={},es={},re={},ou={},ta={};
+  months.forEach(function(mn){
+    var data=(mn===curMonth)?md:lm(mn);
+    var mx=maxDay(mn);
+    for(var d=1;d<=mx;d++){
+      if(data[d])Object.values(data[d]).forEach(function(e){
+        if(matchFor(e,'loja'))lo[e.loja]=1;
+        if(matchFor(e,'motor'))mo[e.motor]=1;
+        if(matchFor(e,'mkt'))mk[e.mkt]=1;
+        if(matchFor(e,'cidade')&&e.cidade&&e.cidade.trim())ci[e.cidade.trim()]=1;
+        if(matchFor(e,'estado'))es[e.estado]=1;
+        if(matchFor(e,'regiao')){var rg=e.regiao||getRegiao(e.estado||'');if(rg)re[rg]=1;else re['__none__']=1;}
+        if(matchFor(e,'outros')){var ov=e.outros_itens||'';if(ov)ou[ov]=1;else ou['__none__']=1;}
+        if(matchFor(e,'tipo_anuncio')){var tv=e.tipo_anuncio||'';if(tv)ta[tv]=1;else ta['__none__']=1;}
+      });
+    }
+  });
+  function rp(id,vals,def){
+    var cur=document.getElementById(id).value;
+    document.getElementById(id).innerHTML='<option value="">'+def+'</option>'+vals.map(function(v){return '<option'+(v===cur?' selected':'')+'>'+v+'</option>';}).join('')+'<option value="__none__">NENHUM</option>';
+  }
+  rp('f-loja',LOJAS.filter(function(l){return lo[l];}),'TODOS');
+  rp('f-motor',MOTORS.filter(function(m){return mo[m];}),'TODOS');
+  rp('f-mkt',Object.keys(mk).sort(),'TODOS');
+  rp('f-cidade',Object.keys(ci).sort(),'TODOS');
+  rp('f-estado',ESTADOS.filter(function(e){return es[e];}),'TODOS');
+  var OUTROS_ORD=['NENHUM','ÓLEO','CARRINHO'];
+  var curOu=document.getElementById('f-outros').value;
+  document.getElementById('f-outros').innerHTML='<option value="">TODOS</option>'+OUTROS_ORD.filter(function(v){return ou[v];}).map(function(v){return '<option value="'+v+'"'+(v===curOu?' selected':'')+'>'+v+'</option>';}).join('')+(ou['__none__']?'<option value="__none__"'+('__none__'===curOu?' selected':'')+'>NENHUM</option>':'');
+  var TA_ORD=['CLÁSSICO','PREMIUM','PADRÃO'];
+  var curTa=document.getElementById('f-tipo_anuncio').value;
+  document.getElementById('f-tipo_anuncio').innerHTML='<option value="">TODOS</option>'+TA_ORD.filter(function(v){return ta[v];}).map(function(v){return '<option value="'+v+'"'+(v===curTa?' selected':'')+'>'+v+'</option>';}).join('')+(ta['__none__']?'<option value="__none__"'+('__none__'===curTa?' selected':'')+'>NENHUM</option>':'');
+  var REGIOES_ORD=['NORTE','NORDESTE','CENTRO-OESTE','SUDESTE','SUL'];
+  var curReg=document.getElementById('f-regiao').value;
+  document.getElementById('f-regiao').innerHTML='<option value="">TODOS</option>'+REGIOES_ORD.filter(function(r){return re[r];}).map(function(r){return '<option value="'+r+'"'+(r===curReg?' selected':'')+'>'+r+'</option>';}).join('')+(re['__none__']?'<option value="__none__"'+('__none__'===curReg?' selected':'')+'>NENHUM</option>':'');
+  var curMês=document.getElementById('f-mes').value||'';
+  var mesesComDados={};
+  months.forEach(function(mn){var data=(mn===curMonth)?md:lm(mn);var mx=maxDay(mn);
+    for(var d=1;d<=mx;d++){
+      if(data[d])Object.values(data[d]).forEach(function(e){
+        if(!matchFor(e,'mes'))return;
+        var effM=mn;
+        if(e.data_venda&&e.data_venda.length===10){var p=e.data_venda.split('/');effM=parseInt(p[1]);}
+        mesesComDados[effM]=1;
+      });
+    }
+  });
+  document.getElementById('f-mes').innerHTML='<option value="">TODOS</option>'+MONTHS.filter(function(m){return mesesComDados[m.n];}).map(function(m){return '<option value="'+m.n+'"'+(String(m.n)===curMês?' selected':'')+'>2026 - '+m.l+'</option>';}).join('');
+  buildGrafMotors();
+  // Populate f-dia with days that have data (using data_venda)
+  var allDays={};
+  months2.forEach(function(mn){
+    var data2=(mn===curMonth)?md:lm(mn);var mx2=maxDay(mn);
+    for(var d=1;d<=mx2;d++){
+      if(data2[d])Object.values(data2[d]).forEach(function(e){
+        if(!matchFor(e,'dia'))return;
+        var effD=d,effM=mn;
+        if(e.data_venda&&e.data_venda.length===10){var p=e.data_venda.split('/');effD=parseInt(p[0]);effM=parseInt(p[1]);}
+        allDays[effD+'_'+effM]={d:effD,mn:effM};
+      });
+    }
+  });
+  var curFdia=document.getElementById('f-dia')?document.getElementById('f-dia').value:'';
+  var fdia=document.getElementById('f-dia');
+  if(fdia){
+    var moFilter=parseInt(document.getElementById('f-mes').value)||null;
+    var daysArr=Object.values(allDays).filter(function(x){return !moFilter||x.mn===moFilter;}).sort(function(a,b){return a.mn!==b.mn?a.mn-b.mn:a.d-b.d;});
+    fdia.innerHTML='<option value="">TODOS</option>'+daysArr.map(function(x){var wd=WD[new Date(2026,x.mn-1,x.d).getDay()];return '<option value="'+x.d+'"'+(String(x.d)===curFdia?' selected':'')+'>'+x.d+' - '+wd+'</option>';}).join('');
+  }
+}
+function clearGrafFilters(){
+  ['gf-loja','gf-mes','gf-motor','gf-dia'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.value='';
+  });
+  buildGrafMotors();
+  var elE=document.getElementById('gf-entrega');if(elE)elE.value='sim_nao';
+  renderGraf();
+}
+
+function buildGrafDias(){
+  var msel=document.getElementById('gf-mes');
+  var dsel=document.getElementById('gf-dia');
+  if(!dsel)return;
+  var mes=msel?parseInt(msel.value)||null:null;
+  var gfLoja=document.getElementById('gf-loja')?document.getElementById('gf-loja').value:'';
+  var gfMot=document.getElementById('gf-motor')?document.getElementById('gf-motor').value:'';
+  var cur=dsel.value;
+  var months=mes?[mes]:MONTHS.map(function(m){return m.n;});
+  var days={};
+  months.forEach(function(mn){
+    var data=(mn===curMonth)?md:lm(mn);
+    var mx=maxDay(mn);
+    for(var d=1;d<=mx;d++){
+      if(!data[d])continue;
+      // Use data_venda day for each sale
+      Object.values(data[d]).forEach(function(e){
+        if(!e)return;
+        if(gfLoja&&(e.loja||'')!==gfLoja)return;
+        if(gfMot&&(e.motor||'')!==gfMot)return;
+        var effD=d;
+        if(e.data_venda&&e.data_venda.length===10){var _p=e.data_venda.split('/');var _d=parseInt(_p[0]);var _m=parseInt(_p[1]);if(_m===mn)effD=_d;}
+        var wd=WD[new Date(2026,mn-1,effD).getDay()];
+        days[effD+'_'+mn]={d:effD,mn:mn,label:effD+' - '+wd+(months.length>1?' ('+MONTHS.find(function(m){return m.n===mn;}).l+')':'')};
+      });
+    }
+  });
+  var daysArr=Object.values(days).sort(function(a,b){return a.mn!==b.mn?a.mn-b.mn:a.d-b.d;});
+  dsel.innerHTML='<option value="">TODOS</option>'+daysArr.map(function(x){return '<option value="'+x.d+'_'+x.mn+'"'+(x.d+'_'+x.mn===cur?' selected':'')+'>'+x.label+'</option>';}).join('');
+  if(cur&&!days[cur])dsel.value='';
+}
+
+function buildGrafMotors(){
+  var gfLoja=document.getElementById('gf-loja')?document.getElementById('gf-loja').value:'';
+  var gfMot=document.getElementById('gf-motor')?document.getElementById('gf-motor').value:'';
+  var gfMes=document.getElementById('gf-mes')?parseInt(document.getElementById('gf-mes').value)||null:null;
+
+  // Pass 1: collect lojas from all data (no filter)
+  var lojas={};
+  MONTHS.forEach(function(mo){
+    var data=(mo.n===curMonth)?md:lm(mo.n);if(!data)return;
+    Object.values(data).forEach(function(day){if(!day)return;Object.values(day).forEach(function(e){if(e&&e.loja)lojas[e.loja]=1;});});
+  });
+
+  // Pass 2: collect motors respecting loja+mes filter
+  var motors={};
+  MONTHS.forEach(function(mo){
+    if(gfMes&&mo.n!==gfMes)return;
+    var data=(mo.n===curMonth)?md:lm(mo.n);if(!data)return;
+    Object.values(data).forEach(function(day){if(!day)return;Object.values(day).forEach(function(e){
+      if(!e)return;
+      if(gfLoja&&(e.loja||'')!==gfLoja)return;
+      if(e.motor)motors[e.motor]=1;
+    });});
+  });
+
+  // Pass 3: collect meses respecting loja+motor filter (use data_venda month when available)
+  var meses={};
+  MONTHS.forEach(function(mo){
+    var data=(mo.n===curMonth)?md:lm(mo.n);if(!data)return;
+    Object.values(data).forEach(function(day){if(!day)return;Object.values(day).forEach(function(e){
+      if(!e)return;
+      if(gfLoja&&(e.loja||'')!==gfLoja)return;
+      if(gfMot&&(e.motor||'')!==gfMot)return;
+      var effM=mo.n;
+      if(e.data_venda&&e.data_venda.length===10){var _p=e.data_venda.split('/');effM=parseInt(_p[1]);}
+      var mo2=MONTHS.find(function(m){return m.n===effM;});
+      if(mo2)meses[effM]=mo2.l;
+    });});
+  });
+
+  // gf-loja
+  var lsel=document.getElementById('gf-loja');
+  if(lsel){var lc=lsel.value;var ll=LOJAS.filter(function(l){return lojas[l];});lsel.innerHTML='<option value="">TODOS</option>'+ll.map(function(l){return '<option value="'+l+'"'+(l===lc?' selected':'')+'>'+l+'</option>';}).join('');}
+  // gf-motor
+  var sel=document.getElementById('gf-motor');
+  if(sel){var cur=sel.value;var ml=MOTORS.filter(function(m){return motors[m];});sel.innerHTML='<option value="">TODOS</option>'+ml.map(function(m){return '<option value="'+m+'"'+(m===cur?' selected':'')+'>'+m+'</option>';}).join('');if(cur&&!motors[cur])sel.value='';}
+  // gf-mes
+  var msel=document.getElementById('gf-mes');
+  if(msel){var mcur=msel.value;var mesl=MONTHS.filter(function(m){return meses[m.n];});msel.innerHTML='<option value="">TODOS</option>'+mesl.map(function(m){return '<option value="'+m.n+'"'+(String(m.n)===String(mcur)?' selected':'')+'>'+m.l+'</option>';}).join('');if(mcur&&!meses[parseInt(mcur)])msel.value='';}
+  buildGrafDias();
+}
+function setF(day,idx,field,val){
+  if(!md[day])md[day]={};if(!md[day][idx])md[day][idx]={};
+  md[day][idx][field]=val;sm(curMonth,md);updDynFilters();updSummary();renderBadges();
+}
+function toggleAddPanel(){
+  var p=document.getElementById('add-panel');
+  if(!p)return;
+  var showing=p.style.display==='flex';
+  p.style.display=showing?'none':'flex';
+  if(!showing){
+    // Default to current month and today
+    curMonth=TM;
+    curDay=TD;
+    buildMonthSel();
+    // Set month select to current month
+    document.getElementById('sel-month').value=TM;
+    buildDaySel();
+    // Set day select to today
+    document.getElementById('sel-day').value=TD;
+    md=lm(curMonth);
+  }
+}
+function addVendaTop(){
+  var today=new Date();
+  var mo=TM;
+  var dy=TD;
+  curMonth=mo;
+  curDay=dy;
+  md=lm(curMonth);
+  // Close any open edit cards, asking to save if in edit mode
+  var openEdits=[];
+  document.querySelectorAll('[id^="editbtn_"]').forEach(function(btn){
+    if(btn.textContent==='SALVAR')openEdits.push(btn);
+  });
+  if(openEdits.length>0){
+    var msg=openEdits.length===1?'Há uma venda em edição. Deseja salvar antes de continuar?':'Há '+openEdits.length+' vendas em edição. Deseja salvar todas antes de continuar?';
+    if(confirm(msg)){
+      openEdits.forEach(function(btn){toggleEditCard(btn);});
+    }
+  }
+  renderNewForm();
+  // Clear sales area — only new form stays visible
+  var sa=document.getElementById('sales-area');if(sa)sa.innerHTML='';
+  renderBadges();
+  updSummary();
+  var dvInp=document.getElementById('nf_data_venda');
+  if(dvInp){var _dd=String(dy).padStart(2,'0');var _mm=String(mo).padStart(2,'0');dvInp.value=_dd+'/'+_mm+'/'+today.getFullYear();}
+  var f=document.getElementById('new-form-area');
+  if(f)setTimeout(function(){f.scrollIntoView({behavior:'smooth',block:'start'});},100);
+}
+function updTopBtn(){
+  var b=document.getElementById('btn-add-top');
+  if(!b)return;
+  b.textContent='+ ADICIONAR VENDA';
+  b.style.background='#fff';
+  b.style.color='#1A3A6B';
+  b.style.border='2px solid #1A3A6B';
+  b.style.opacity='1';
+}
+function setViewDay(day,mo){
+  viewDay=day;
+  // Set month filter
+  if(mo){
+    filters.mes=String(mo);
+    var fmes=document.getElementById('f-mes');
+    if(fmes)fmes.value=mo;
+    curMonth=mo;
+    md=lm(mo);
+  }
+  // Set day filter
+  filters.dia=String(day);
+  var fdia=document.getElementById('f-dia');
+  if(fdia)fdia.value=day;
+  renderPills();
+  renderBadges();
+  renderSales();
+  updSummary();
+  // Scroll to sales area
+  var sa=document.getElementById('sales-area');
+  if(sa)setTimeout(function(){sa.scrollIntoView({behavior:'smooth',block:'start'});},100);
+}
+function allVis(){
+  var a=[];
+  var months=MONTHS.map(function(m){return m.n;});
+  if(filters.mes)months=months.filter(function(m){return m===parseInt(filters.mes);});
+  months.forEach(function(mo){
+    var data=(mo===curMonth)?md:lm(mo);
+    var mx=maxDay(mo);
+    for(var d=1;d<=mx;d++){if(data[d])Object.entries(data[d]).forEach(function(p){
+      if(!match(p[1]))return;
+      if(filters.dia){
+        var e=p[1];var effD=d;
+        if(e.data_venda&&e.data_venda.length===10){var _p=e.data_venda.split('/');effD=parseInt(_p[0]);}
+        if(effD!==parseInt(filters.dia))return;
+      }
+      a.push({day:d,idx:p[0],e:p[1],mo:mo});
+    });}
+  });
+  return a;
+}
+
+function allVisGraf(mes,mot,loja,dia,entrega){
+  var a=[];
+  var months=MONTHS.map(function(m){return m.n;});
+  if(mes)months=months.filter(function(m){return m===parseInt(mes);});
+  months.forEach(function(mo){
+    var data=(mo===curMonth)?md:lm(mo);
+    var mx=maxDay(mo);
+    for(var d=1;d<=mx;d++){
+      if(!data[d])continue;
+      Object.entries(data[d]).forEach(function(p){
+        var e=p[1];if(!e)return;
+        if(mot&&(e.motor||'')!==mot)return;
+        if(loja&&(e.loja||'')!==loja)return;
+        if(dia){
+          var effDG=d;
+          if(e.data_venda&&e.data_venda.length===10){var _pg=e.data_venda.split('/');effDG=parseInt(_pg[0]);}
+          if((effDG+'_'+mo)!==dia)return;
+        }
+        // Entrega filter (default: sim_nao = exclude DEVOLVIDO)
+        var ent=e.data_entrega||'NAO_ENTREGOU';
+        var isDev=ent==='DEVOLVIDO';
+        var isNao=ent==='NAO_ENTREGOU';
+        var isSim=!isDev&&!isNao; // includes SIM_PENDENTE and actual dates
+        var ef=entrega||'sim_nao';
+        if(ef==='sim_nao'&&isDev)return;
+        if(ef==='sim'&&!isSim)return;
+        if(ef==='nao'&&!isNao)return;
+        if(ef==='devolvido'&&!isDev)return;
+        // ef==='todos': include all
+        a.push({day:d,idx:p[0],e:e,mo:mo});
+      });
+    }
+  });
+  return a;
+}
+
+
+function calcProjection(count, valTotal, retTotal, diasComVenda){
+  var mesFiltro=parseInt(document.getElementById('f-mes')?document.getElementById('f-mes').value:'');
+  var hoje=new Date();
+  var diaHoje=hoje.getDate();
+  var mesHoje=hoje.getMonth()+1;
+  var diasRef, diasProj;
+  var MONTH_DAYS={4:30,5:31,6:30,7:31,8:31,9:30,10:31,11:30,12:31};
+
+  if(mesFiltro){
+    // Project to full month
+    diasRef=mesFiltro===mesHoje?diaHoje:MONTH_DAYS[mesFiltro]||30;
+    diasProj=MONTH_DAYS[mesFiltro]||30;
+  } else {
+    // Project to rest of year from 21/04 to 31/12
+    var inicio=new Date(2026,3,21);
+    var fimAno=new Date(2026,11,31);
+    diasRef=Math.max(1,Math.floor((hoje-inicio)/(1000*60*60*24))+1);
+    diasProj=Math.floor((fimAno-inicio)/(1000*60*60*24))+1;
+  }
+
+  if(diasRef<1)diasRef=1;
+  var fator=diasProj/diasRef;
+  return {
+    qtd:Math.round(count*fator),
+    val:Math.round(valTotal*fator),
+    ret:Math.round(retTotal*fator),
+    dias:Math.round(diasComVenda*fator),
+    label:(function(){
+      var diaEl=document.getElementById('f-dia')||document.getElementById('gf-dia');
+      var diaVal=diaEl?diaEl.value:'';
+      if(diaVal)return 'Proj. dia';
+      if(mesFiltro)return 'Proj. mês';
+      return 'Proj. ano';
+    })()
+  };
+}
+function updSummary(){
+  var _curNav=document.body.getAttribute('data-nav')||'graf';
+  var _mcClass=_curNav==='reg'?'mc-gray':'mc';
+  var v=allVis();var val=0;var ret=0;var dias={};
+  v.forEach(function(x){
+    var _dvK;if(x.e.data_venda&&x.e.data_venda.length===10){var _p=x.e.data_venda.split('/');_dvK=_p[0]+'_'+_p[1];}else{_dvK=x.day+'_'+(x.mo||curMonth);} dias[_dvK]=1;
+    var n=parseFloat((x.e.vv||'').replace(',','.'));if(!isNaN(n))val+=n;
+    var r=parseFloat((x.e.vr||'').replace(',','.'));if(!isNaN(r))ret+=r;
+  });
+  var pct=val>0?Math.round(ret/val*100):0;
+  var nDias=Object.keys(dias).length;
+  var diasOp=Math.max(1,Math.floor((new Date()-new Date(2026,3,21))/(1000*60*60*24))+1);
+  var pctDias=Math.round(nDias/diasOp*100);
+  var proj=calcProjection(v.length,val,ret,nDias);
+  var ps='<div style="font-size:10px;color:rgba(255,255,255,.65);margin-top:4px;padding-top:4px;border-top:.5px solid rgba(255,255,255,.2);">'+proj.label+': ';
+  document.getElementById('summary-bar').innerHTML=
+    '<div class="'+ _mcClass +'"><div class="mc-l">Vendas</div><div class="mc-v">'+v.length+'</div>'+ps+proj.qtd+' vendas</div></div>'+
+    '<div class="'+ _mcClass +'"><div class="mc-l">Dias com venda</div><div class="mc-v">'+nDias+'</div>'+
+    '<div style="font-size:11px;color:rgba(255,255,255,.75);margin-top:5px;padding-top:5px;border-top:.5px solid rgba(255,255,255,.25);text-align:center;">'+pctDias+'% de '+diasOp+' dias op.</div></div>'+
+    '<div class="'+ _mcClass +'"><div class="mc-l">Receita</div><div class="mc-v" style="font-size:17px;">R$ '+val.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div>'+
+    '<div style="font-size:10px;color:rgba(255,255,255,.65);margin-top:3px;">Média: R$ '+(v.length>0?(val/v.length).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'0,00')+' / venda</div>'+
+    ps+'R$ '+proj.val.toLocaleString('pt-BR')+'</div></div>'+
+    '<div class="'+ _mcClass +'"><div class="mc-l">Retorno</div><div class="mc-v" style="font-size:17px;">R$ '+ret.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div>'+
+    '<div style="font-size:10px;color:rgba(255,255,255,.65);margin-top:3px;">Média: R$ '+(v.length>0?(ret/v.length).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'0,00')+' / venda</div>'+
+    ps+'R$ '+proj.ret.toLocaleString('pt-BR')+'</div></div>'+
+    '<div class="'+ _mcClass +'"><div class="mc-l">Retorno / Receita</div><div class="mc-v" style="font-size:22px;">'+pct+'%</div>'+
+    '<div style="font-size:11px;color:rgba(255,255,255,.75);margin-top:5px;padding-top:5px;border-top:.5px solid rgba(255,255,255,.25);text-align:center;">R$ '+Math.round(ret).toLocaleString('pt-BR')+' de R$ '+Math.round(val).toLocaleString('pt-BR')+'</div></div>';
+}
+
+function renderAddBtn(){var w=document.getElementById('add-btn-wrap');if(w)w.innerHTML='';}
+
+function renderBadges(){
+  var h='';
+  var months=MONTHS.map(function(m){return m.n;});
+  if(filters.mes)months=months.filter(function(m){return m===parseInt(filters.mes);});
+  var MABBR={4:'Abr',5:'Mai',6:'Jun',7:'Jul',8:'Ago',9:'Set',10:'Out',11:'Nov',12:'Dez'};
+  var counts={};
+  months.forEach(function(mn){
+    var data=lm(mn);var mx=maxDay(mn);
+    for(var d=1;d<=mx;d++){
+      if(!data[d])continue;
+      Object.values(data[d]).filter(match).forEach(function(e){
+        var effD=d,effM=mn;
+        if(e.data_venda&&e.data_venda.length===10){var p=e.data_venda.split('/');effD=parseInt(p[0]);effM=parseInt(p[1]);}
+        var key=effM+'_'+effD;
+        counts[key]=(counts[key]||0)+1;
+      });
+    }
+  });
+  Object.keys(counts).sort(function(a,b){var pa=a.split('_'),pb=b.split('_');return (parseInt(pa[0])*100+parseInt(pa[1]))-(parseInt(pb[0])*100+parseInt(pb[1]));}).forEach(function(key){
+    var p=key.split('_');var mn=parseInt(p[0]);var d=parseInt(p[1]);
+    var wd=WD[new Date(2026,mn-1,d).getDay()];
+    var lbl=(MABBR[mn]||mn)+' '+d+' '+wd+' ('+counts[key]+')';
+    h+='<span class="day-pill" onclick="setViewDay('+d+','+mn+')">'+lbl+'</span>';
+  });
+  document.getElementById('day-badge-row').innerHTML=h||'<span style="font-size:12px;color:var(--text2);">Nenhuma venda ainda.</span>';
+}
+
+function cloneEntry(day,idx){
+  if(!md[day]||!md[day][idx])return;
+  var src=md[day][idx];var clone={};
+  Object.keys(src).forEach(function(k){clone[k]=src[k];});
+  clone.obs='';
+  md[day][Date.now()]=clone;
+  sm(curMonth,md);updDynFilters();renderSales();renderBadges();updSummary();
+}
+
+function goPrevDay(){
+  if(!viewDay||!curMonth)return;
+  var prev=viewDay-1;if(prev<1)return;
+  viewDay=prev;curDay=prev;
+  document.getElementById('f-dia').value=prev;filters.dia=String(prev);
+  renderBadges();renderSales();updSummary();
+}
+function goNextDay(){
+  if(!viewDay||!curMonth)return;
+  var mx=maxDay(curMonth);var next=viewDay+1;if(next>mx)return;
+  viewDay=next;curDay=next;
+  document.getElementById('f-dia').value=next;filters.dia=String(next);
+  renderSales();updTopBtn();
+}
+
+function setEntregueNF(val){
+  var inp=document.getElementById('nf_de_data');
+  var sim=document.getElementById('nf_entregue_sim');
+  var nao=document.getElementById('nf_entregue_nao');
+  var dev=document.getElementById('nf_entregue_dev');
+  [sim,nao,dev].forEach(function(el){if(el)el.classList.remove('selected');});
+  if(val==='nao'){
+    if(nao)nao.classList.add('selected');
+    if(inp){inp.value='NAO_ENTREGOU';inp.disabled=true;}
+  } else if(val==='devolvido'){
+    if(dev)dev.classList.add('selected');
+    if(inp){inp.disabled=false;if(!inp.value||inp.value==='NAO_ENTREGOU')inp.value='';setTimeout(function(){inp.focus();},50);}
+    if(inp)inp.dataset.devolvido='1';
+  } else {
+    if(sim)sim.classList.add('selected');
+    if(inp){inp.disabled=false;if(!inp.value||inp.value==='NAO_ENTREGOU')inp.value='';setTimeout(function(){inp.focus();},50);}
+    if(inp)inp.dataset.devolvido='';
+  }
+}
+function setEntregueExist(day,idx,fk,val){
+  var newVal=val==='nao'?'NAO_ENTREGOU':val==='devolvido'?'DEVOLVIDO':(md[day]&&md[day][idx]&&md[day][idx][fk]!=='NAO_ENTREGOU'&&md[day][idx][fk]!=='DEVOLVIDO'?md[day][idx][fk]:'');
+  setF(day,idx,fk,newVal);
+  renderSales();
+}
+function toggleNaoEntregou(fieldId){
+  var inp=document.getElementById(fieldId);
+  var btn=document.getElementById(fieldId+'_nao');
+  if(!inp||!btn)return;
+  if(inp.value==='NAO_ENTREGOU'||inp.disabled){
+    inp.value='';inp.disabled=false;
+    btn.style.background='transparent';btn.style.color='var(--text2)';btn.textContent='Não conseguiu entregar';
+  } else {
+    inp.value='NAO_ENTREGOU';inp.disabled=true;
+    btn.style.background='var(--bg2)';btn.style.color='var(--text)';btn.textContent='Não conseguiu entregar ✓';
+  }
+}
+function toggleNaoEntregouExist(day,idx,fk){
+  var cur=md[day]&&md[day][idx]?md[day][idx][fk]:'';
+  var newVal=cur==='NAO_ENTREGOU'?'':'NAO_ENTREGOU';
+  setF(day,idx,fk,newVal);
+  renderSales();
+}
+function fmtBRL(val){
+  if(!val||val==='')return '';
+  var s=val.toString().replace('R$','').trim();
+  // If already has dot as decimal (e.g. "3991.03"), parse directly
+  var n;
+  if(s.indexOf('.')!==-1&&s.indexOf(',')===-1){
+    n=parseFloat(s);
+  } else {
+    // BRL format "3.991,03" — remove thousand dots, replace comma
+    n=parseFloat(s.replace(/\./g,'').replace(',','.'));
+  }
+  if(isNaN(n))return val;
+  return 'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function parseBRL(val){
+  if(!val)return '';
+  return val.toString().replace('R$','').trim().replace(/\./g,'').replace(',','.');
+}
+function nfEstadoChange(val){
+  var el=document.getElementById('nf_regiao');
+  if(el)el.value=getRegiao(val);
+}
+function setFfromElVal(el){
+  var fk=el.dataset.fk;
+  var day=parseInt(el.dataset.day);
+  var idx=el.dataset.idx;
+  if(fk==='data_venda'){setF(day,idx,fk,el.value);return;}
+  // Store raw numeric value, display formatted
+  var raw=parseBRL(el.value);
+  el.dataset.raw=raw;
+  // Recalculate VR when vv changes
+  if(fk==='vv') calcVR_card(el,day,el.dataset.idx);
+  setF(day,idx,fk,raw);
+  if(fk==='estado'){
+    setF(day,idx,'regiao',getRegiao(el.value));
+    var card=document.getElementById('ec_'+idx);
+    if(card){var ri=card.querySelectorAll('input[readonly]');ri.forEach(function(i){i.value=getRegiao(el.value);});}
+  }
+}
+function fmtFieldOnBlur(el){
+  var fk=el.dataset?el.dataset.fk:el.id.replace('nf_','');
+  if(fk==='data_venda')return;
+  if(fk==='vv'||fk==='vv'||el.id==='nf_vv'||el.id==='nf_vr'){
+    var raw=parseBRL(el.value);
+    if(raw&&!isNaN(parseFloat(raw)))el.value=fmtBRL(raw);
+  }
+}
+function setFfromEl(el){
+  var day=parseInt(el.dataset.day);var idx=el.dataset.idx;var fk=el.dataset.fk;
+  setF(day,idx,fk,el.value);
+  if(fk==='tipo_anuncio'||fk==='motor'||fk==='outros_itens'||fk==='vv'){
+    calcVR_card(el,day,idx);
+  }
+}
+function setFfromElSearch(el){
+  var day=parseInt(el.dataset.day);
+  var mo=parseInt(el.dataset.mo)||curMonth;
+  var idx=el.dataset.idx;
+  var fk=el.dataset.fk;
+  if(!fk||fk==='entregue_status')return;
+  // Temporarily set curMonth to the entry's month to save correctly
+  var prevMonth=curMonth;
+  var prevMd=md;
+  if(mo!==curMonth){curMonth=mo;md=lm(mo);}
+  if(fk==='vv'||fk==='vr'){
+    var raw=parseBRL(el.value);
+    if(raw)setF(day,idx,fk,raw);
+  } else {
+    setF(day,idx,fk,el.value);
+  }
+  if(mo!==prevMonth){curMonth=prevMonth;md=prevMd;}
+}
+
+function calcVR_card(el,day,idx){
+  var card=el.closest('.ec');if(!card)return;
+  // Read values from card inputs
+  var getCardVal=function(fk){
+    var inp=card.querySelector('[data-fk="'+fk+'"]');
+    return inp?inp.value:'';
+  };
+  var vv=parseFloat(parseBRL(getCardVal('vv')))||0;
+  if(!vv)return;
+  // Comissão
+  var tipo=getCardVal('tipo_anuncio');
+  var mkt=getCardVal('mkt');
+  var com=0.15;
+  if(mkt==='Mercado Livre'){
+    if(tipo==='CLÁSSICO')com=0.12;
+    else if(tipo==='PREMIUM')com=0.17;
+    else com=0.12;
+  }
+  // Frete do motor
+  var motor=getCardVal('motor');
+  var frete=0;
+  try{
+    var precData=JSON.parse(localStorage.getItem('pnv3:prec')||'{}');
+    if(precData[motor]&&precData[motor].frete)frete=parseFloat(precData[motor].frete)||0;
+  }catch(e){}
+  // Outros itens
+  var outros=getCardVal('outros_itens');
+  var outrosDesc=outros==='ÓLEO'?240:outros==='CARRINHO'?280:0;
+  // Calculate VR
+  var vr=vv-vv*com-frete-outrosDesc;
+  if(vr<0)vr=0;
+  var vrFormatted='R$ '+vr.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  // Update VR input in card
+  var vrInp=card.querySelector('[data-fk="vr"]');
+  if(vrInp){
+    vrInp.value=vrFormatted;
+    setF(day,idx,'vr',String(vr));
+  }
+}
+
+function renderNewForm(){
+  var area=document.getElementById('new-form-area');if(!area||!curDay||!curMonth)return;
+  var h='<div class="sales-wrap" style="margin-bottom:10px;">';
+  h+='<div class="sales-title" id="nf-title">Nova venda &mdash; Dia '+curDay+'</div>';
+  h+='<div class="ec"><div class="ef">';
+  FIELDS.forEach(function(f){
+    var isReq=!f.obs&&!f.opt&&f.k!=='serial'&&f.k!=='data_entrega';
+    var reqMark=isReq?'<span style="color:#E24B4A;"> *</span>':'';
+    if(f.obs){
+      h+='<div class="fg" style="grid-column:1/-1;"><label>'+f.l+'</label>';
+      h+='<textarea placeholder="Observações..." rows="2" id="nf_'+f.k+'" style="width:100%;font-size:12px;padding:5px 7px;border-radius:6px;border:.5px solid var(--border2);background:var(--bg);color:var(--text);font-family:var(--font);resize:none;"></textarea></div>';
+    }else if(f.s){
+      var _defVal=f.k==='garantia'?'N\u00c3O':'';var opts=f.s.map(function(o){return '<option value="'+o+'"'+(o===_defVal?' selected':'')+'>'+( o||'- selecione -')+'</option>';}).join('');
+      var onchg=f.k==='estado'?' onchange="nfEstadoChange(this.value)"':f.k==='mkt'?' onchange="nfMktChange(this.value)"':(f.k==='outros_itens'||f.k==='motor'||f.k==='tipo_anuncio')?' onchange="calcVR()"':'';
+      h+='<div class="fg"><label>'+f.l+reqMark+'</label><select id="nf_'+f.k+'"'+onchg+'>'+opts+'</select></div>';
+    }else if(f.type==='entrega'){
+      h+='<div class="fg" style="grid-column:span 2;"><label>'+f.l+'</label>';
+      h+='<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">';
+      h+='<select id="nf_entregue_sel" onchange="setEntregueNFSelect(this)" style="font-size:12px;height:28px;padding:2px 6px;border:.5px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);cursor:pointer;">';
+      h+='<option value="nao" selected>Não entregue</option>';
+      h+='<option value="sim">Sim, entregue</option>';
+      h+='<option value="devolvido">Devolvido</option>';
+      h+='</select>';
+      h+='<input type="text" id="nf_de_data" placeholder="DD/MM/AAAA" maxlength="10" oninput="fmtDataInput(this)" style="width:120px;font-size:12px;height:28px;padding:4px 7px;border:.5px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-family:var(--font);letter-spacing:.05em;display:none"/>';
+      h+='</div></div>';
+    }else{
+      h+='<div class="fg"><label>'+f.l+reqMark+'</label>';
+      if(f.k==='vr'){
+          h+='<input type="text" id="nf_vr" readonly placeholder="Calculado automaticamente" style="opacity:.85;background:var(--bg2);cursor:default;color:#1D9E75;font-weight:600;"/></div>';
+        } else {
+          var _dvDef='';
+          if(f.k==='data_venda'){var _d=new Date();_dvDef=String(curDay||_d.getDate()).padStart(2,'0')+'/'+String(curMonth||(_d.getMonth()+1)).padStart(2,'0')+'/'+_d.getFullYear();}
+          h+='<input type="text" id="nf_'+f.k+'" value="'+_dvDef+'" placeholder="'+(f.k==='vv'?'R$ 1.000,00':(f.k==='data_venda'?'DD/MM/AAAA':''))+'"'+(f.k==='vv'?' onblur="fmtFieldOnBlur(this);calcVR()" oninput="calcVR()"':'')+'/></div>';
+        }
+    }
+  });
+  h+='</div>';
+  h+='<div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end;">';
+  h+='<button onclick="saveNewEntry()" style="padding:6px 18px;font-size:12px;font-weight:700;background:#FFD43B;color:#1a1a18;border:none;border-radius:7px;cursor:pointer;font-family:var(--font);">Salvar venda</button>';
+  h+='<button onclick="cancelNewEntry()" style="padding:6px 12px;font-size:12px;background:transparent;color:var(--text2);border:.5px solid var(--border2);border-radius:7px;cursor:pointer;font-family:var(--font);">Cancelar</button>';
+  h+='</div></div></div>';
+  area.innerHTML=h;
+}
+
+function saveNewEntry(){
+  if(!curDay||!curMonth)return;
+  var reqFields=FIELDS.filter(function(f){return !f.obs&&!f.opt&&!f.auto&&f.k!=='serial'&&f.k!=='data_entrega'&&f.k!=='garantia';});
+  var missing=false;
+  reqFields.forEach(function(f){
+    var el=document.getElementById('nf_'+f.k);if(!el)return;
+    if(!el.value||!el.value.trim()){missing=true;el.style.borderColor='#E24B4A';}
+    else{el.style.borderColor='';}
+  });
+  if(missing){var t=document.getElementById('nf-title');if(t)t.textContent='Preencha os campos obrigatórios (*)';return;}
+  if(!md[curDay])md[curDay]={};
+  var entry={};
+  FIELDS.forEach(function(f){var el=document.getElementById('nf_'+f.k);if(el){entry[f.k]=(f.k==='vv'||f.k==='vr')?parseBRL(el.value):el.value;}});
+  // Ensure regiao is set based on estado
+  if(entry.estado)entry.regiao=getRegiao(entry.estado);
+  // Handle data_entrega: if Não is selected, force NAO_ENTREGOU
+  var dataEl=document.getElementById('nf_de_data');
+  var entSel=document.getElementById('nf_entregue_sel');
+  var selVal=entSel?entSel.value:'nao';
+  if(selVal==='nao'){
+    entry.data_entrega='NAO_ENTREGOU';
+  } else if(selVal==='devolvido'){
+    entry.data_entrega='DEVOLVIDO';
+  } else if(dataEl&&dataEl.value&&dataEl.value.length===10){
+    entry.data_entrega=dataEl.value;
+  } else {
+    entry.data_entrega='NAO_ENTREGOU';
+  }
+  var dvEl=document.getElementById('nf_data_venda');if(dvEl&&dvEl.value)entry.data_venda=dvEl.value;
+  md[curDay][Date.now()]=entry;
+  sm(curMonth,md);updDynFilters();
+  document.getElementById('new-form-area').innerHTML='';
+  renderSales();renderBadges();updSummary();
+}
+
+function fmtDataInput(el){
+  var v=el.value.replace(/[^0-9]/g,'');
+  if(v.length>2)v=v.slice(0,2)+'/'+v.slice(2);
+  if(v.length>5)v=v.slice(0,5)+'/'+v.slice(5);
+  el.value=v.slice(0,10);
+  // Auto-select SIM when date is complete
+  if(el.value.length===10&&!el.dataset.fk)setEntregueNF('sim');
+}
+function getOutrosDesconto(){
+  var el=document.getElementById('nf_outros_itens');
+  if(!el||!el.value)return 0;
+  if(el.value==='ÓLEO')return 240;
+  if(el.value==='CARRINHO')return 280;
+  return 0;
+}
+function getMotorFrete(){
+  var motorEl=document.getElementById('nf_motor');
+  if(!motorEl||!motorEl.value)return 0;
+  var motor=motorEl.value;
+  try{
+    var data=JSON.parse(localStorage.getItem('pnv3:prec')||'{}');
+    var row=data[motor]||{};
+    var frete=parseFloat((row.frete||'0').toString())||0;
+    return frete;
+  }catch(e){return 0;}
+}
+function nfMktChange(val){
+  var tipoEl=document.getElementById('nf_tipo_anuncio');
+  if(!tipoEl)return;
+  var isML=val==='Mercado Livre';
+  tipoEl.innerHTML='';
+  if(isML){
+    // ML: show CLÁSSICO and PREMIUM (no blank option)
+    tipoEl.innerHTML='<option value="CLÁSSICO">CLÁSSICO</option><option value="PREMIUM">PREMIUM</option>';
+    tipoEl.disabled=false;
+    tipoEl.style.opacity='1';
+  } else {
+    // Others: show PADRÃO only (no CLÁSSICO/PREMIUM)
+    tipoEl.innerHTML='<option value="PADRÃO">PADRÃO</option>';
+    tipoEl.disabled=true;
+    tipoEl.style.opacity='.6';
+  }
+  calcVR();
+}
+function getComissaoPct(){
+  var mktEl=document.getElementById('nf_mkt');
+  var tipoEl=document.getElementById('nf_tipo_anuncio');
+  if(!mktEl)return 0;
+  if(mktEl.value==='Mercado Livre'){
+    if(!tipoEl)return 0.12;
+    if(tipoEl.value==='CLÁSSICO')return 0.12;
+    if(tipoEl.value==='PREMIUM')return 0.17;
+    return 0.12; // default ML
+  }
+  return 0.15; // outros marketplaces
+}
+function calcVR(){
+  var vvEl=document.getElementById('nf_vv');
+  var vrEl=document.getElementById('nf_vr');
+  if(!vvEl||!vrEl)return;
+  var vv=parseFloat(parseBRL(vvEl.value))||0;
+  if(!vv){vrEl.value='';return;}
+  var comissao=vv*getComissaoPct();
+  var frete=getMotorFrete();
+  var outros=getOutrosDesconto();
+  var vr=vv-comissao-frete-outros;
+  if(vr<0)vr=0;
+  // Format directly without fmtBRL (which corrupts plain numbers)
+  vrEl.value='R$ '+vr.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function cancelNewEntry(){document.getElementById('new-form-area').innerHTML='';
+}
+
+function renderSales(){
+  var area=document.getElementById('sales-area');
+
+  // Search mode: show all matching entries across all days/months
+  if(searchQ){
+    var months=MONTHS.map(function(m){return m.n;});
+    if(filters.mes)months=months.filter(function(m){return m===parseInt(filters.mes);});
+    var allResults=[];
+    var MABBR={4:'Abr',5:'Mai',6:'Jun',7:'Jul',8:'Ago',9:'Set',10:'Out',11:'Nov',12:'Dez'};
+    months.forEach(function(mn){
+      var data=lm(mn);var mx=maxDay(mn);
+      for(var d=1;d<=mx;d++){
+        if(data[d])Object.entries(data[d]).forEach(function(p){
+          if(match(p[1]))allResults.push({day:d,mo:mn,idx:p[0],e:p[1]});
+        });
+      }
+    });
+    if(!allResults.length){area.innerHTML='<div style="padding:1rem;text-align:center;color:var(--text2);font-size:13px;">Nenhuma venda encontrada para "'+searchQ+'".</div>';return;}
+    var h='<div class="sales-wrap"><div class="sales-title">'+allResults.length+' resultado(s) para "'+searchQ+'"</div>';
+    allResults.forEach(function(r){
+      var lc=LC[r.e.loja||'']||'var(--border2)';
+      var dayLabel=MABBR[r.mo]+' '+r.day+' '+WD[new Date(2026,r.mo-1,r.day).getDay()];
+      h+='<div class="ec" id="ec_'+r.idx+'" style="border-left-color:'+lc+';">';
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
+      h+='<span style="font-size:11px;color:var(--text2);">'+dayLabel+(r.e.loja?' &middot; '+r.e.loja:'')+(r.e.motor?' &middot; '+r.e.motor:'')+'</span>';
+      h+='<div style="display:flex;gap:5px;">';
+      h+='<button onclick="pedirExclusao('+r.mo+','+r.day+','+r.idx+')" style="font-size:10px;padding:2px 9px;background:transparent;color:#C0392B;border:1.5px solid #C0392B;border-radius:5px;cursor:pointer;font-family:var(--font);font-weight:700;display:none;" id="delbtn_'+r.idx+'">EXCLUIR</button>';
+      h+='<button data-idx="'+r.idx+'" onclick="toggleEditCard(this)" id="editbtn_'+r.idx+'" style="font-size:10px;padding:2px 9px;background:transparent;color:#378ADD;border:1.5px solid #378ADD;border-radius:5px;cursor:pointer;font-family:var(--font);font-weight:700;">EDITAR</button>';
+      
+      
+      h+='</div></div><div class="ef" id="ef_'+r.idx+'">';
+      FIELDS.forEach(function(f){
+        var val=r.e[f.k]||'';
+        if(f.k==='data_venda'){
+          if(!val){val=String(r.day).padStart(2,'0')+'/'+String(r.mo).padStart(2,'0')+'/'+new Date().getFullYear();}
+          else if(val.indexOf('/')===-1&&val.length===8){val=val.substring(0,2)+'/'+val.substring(2,4)+'/'+val.substring(4,8);}
+          else if(val.indexOf('/')===-1&&val.length>0){val=String(r.day).padStart(2,'0')+'/'+String(r.mo).padStart(2,'0')+'/'+new Date().getFullYear();}
+        }
+        if(f.obs){
+          h+='<div class="fg" style="grid-column:1/-1;"><label>'+f.l+'</label><textarea rows="2" disabled data-day="'+r.day+'" data-mo="'+r.mo+'" data-idx="'+r.idx+'" data-fk="'+f.k+'" oninput="setFfromElSearch(this)" style="width:100%;font-size:12px;padding:5px 7px;border-radius:6px;border:.5px solid var(--border2);background:var(--bg2);color:var(--text);font-family:var(--font);resize:none;opacity:.85;">'+val.replace(/</g,'&lt;')+'</textarea></div>';
+        }else if(f.s){
+          var opts=f.s.map(function(o){return '<option value="'+o+'"'+(val===o?' selected':'')+'>'+( o||'- selecione -')+'</option>';}).join('');
+          h+='<div class="fg"><label>'+f.l+'</label><select disabled data-day="'+r.day+'" data-mo="'+r.mo+'" data-idx="'+r.idx+'" data-fk="'+f.k+'" onchange="setFfromElSearch(this)" style="opacity:.85;background:var(--bg2);">'+opts+'</select></div>';
+        }else if(f.type==='entrega'){
+          var entVal=val||'NAO_ENTREGOU';var isNao=entVal==='NAO_ENTREGOU';var isDev=entVal==='DEVOLVIDO';var dispVal=(isNao||isDev)?'':entVal;
+          h+='<div class="fg" style="grid-column:span 2;"><label>'+f.l+'</label><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">';
+          h+='<select disabled data-day="'+r.day+'" data-mo="'+r.mo+'" data-idx="'+r.idx+'" data-fk="entregue_status" onchange="setEntregueSelect(this)" style="font-size:12px;height:28px;padding:2px 6px;border:.5px solid var(--border2);border-radius:var(--r);background:var(--bg2);color:var(--text);opacity:.85;">';
+          h+='<option value="nao"'+(isNao?' selected':'')+'>Não entregue</option>';
+          h+='<option value="sim"'+(!isNao&&!isDev?' selected':'')+'>Sim, entregue</option>';
+          h+='<option value="devolvido"'+(isDev?' selected':'')+'>Devolvido</option>';
+          h+='</select>';
+          h+='<input type="text" disabled value="'+dispVal+'" maxlength="10" data-day="'+r.day+'" data-mo="'+r.mo+'" data-idx="'+r.idx+'" data-fk="'+f.k+'" oninput="fmtDataInput(this);setFfromElSearch(this)" placeholder="DD/MM/AAAA" style="width:120px;font-size:12px;height:28px;padding:4px 7px;border:.5px solid var(--border2);border-radius:var(--r);background:var(--bg2);color:var(--text);letter-spacing:.05em;display:'+(isNao?'none':'inline-block')+'"/>';
+          h+='</div></div>';
+        }else if(f.auto){
+          h+='<div class="fg"><label>'+f.l+'</label><input type="text" readonly value="'+val.replace(/"/g,'&quot;')+'" style="opacity:.7;background:var(--bg2);cursor:default;"/></div>';
+        }else if(f.k==='data_venda'){
+          h+='<div class="fg"><label>'+f.l+'</label><input type="text" disabled maxlength="10" placeholder="DD/MM/AAAA" value="'+val.replace(/"/g,'&quot;')+'" data-day="'+r.day+'" data-mo="'+r.mo+'" data-idx="'+r.idx+'" data-fk="'+f.k+'" oninput="fmtDataInput(this);setFfromElSearch(this)" style="opacity:.85;background:var(--bg2);letter-spacing:.05em;width:120px;"/></div>';
+        }else{
+          var isValField=(f.k==='vv'||f.k==='vr');
+          var dispVal2=isValField?fmtBRL(val):val;
+          var dispPlaceholder=isValField?'R$ 1.000,00':'';
+          h+='<div class="fg"><label>'+f.l+'</label><input type="text" disabled placeholder="'+dispPlaceholder+'" value="'+dispVal2.replace(/"/g,'&quot;')+'" data-day="'+r.day+'" data-mo="'+r.mo+'" data-idx="'+r.idx+'" data-fk="'+f.k+'" oninput="setFfromElSearch(this)" onblur="fmtFieldOnBlur(this)" style="opacity:.85;background:var(--bg2);"/></div>';
+        }
+      });
+      h+='</div></div>';
+    });
+    h+='</div>';area.innerHTML=h;return;
+  }
+
+  if(!viewDay){area.innerHTML='<div style="padding:1rem;text-align:center;color:var(--text2);font-size:13px;">Selecione um dia no filtro para ver as vendas.</div>';return;}
+  var curDay=viewDay;
+  if(!curMonth)curMonth=parseInt(filters.mes)||TM;
+  md=lm(curMonth);
+  var entries=md[curDay]?Object.entries(md[curDay]).filter(function(p){return match(p[1]);}):[];
+  if(!entries.length){area.innerHTML='';return;}
+  var wd=WD[new Date(2026,curMonth-1,curDay).getDay()];
+  var h='<div class="sales-wrap"><div class="sales-title">Vendas do dia '+curDay+' &mdash; '+wd+'</div>';
+  entries.forEach(function(p){
+    var idx=p[0];var e=p[1];var lc=LC[e.loja||'']||'var(--border2)';
+    h+='<div class="ec" id="ec_'+idx+'" style="border-left-color:'+lc+';">';
+    // Top bar: delete + edit buttons
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
+    h+='<span style="font-size:11px;color:var(--text2);">'+(e.loja||'')+(e.motor?' &middot; '+e.motor:'')+'</span>';
+    h+='<div style="display:flex;gap:5px;">';
+    h+='<button onclick="pedirExclusao('+curMonth+','+curDay+','+idx+')" style="font-size:10px;padding:2px 9px;background:transparent;color:#C0392B;border:1.5px solid #C0392B;border-radius:5px;cursor:pointer;font-family:var(--font);font-weight:700;display:none;" id="delbtn_'+idx+'">EXCLUIR</button>';
+    h+='<button data-idx="'+idx+'" onclick="toggleEditCard(this)" id="editbtn_'+idx+'" style="font-size:10px;padding:2px 9px;background:transparent;color:#378ADD;border:1.5px solid #378ADD;border-radius:5px;cursor:pointer;font-family:var(--font);font-weight:700;letter-spacing:.03em;">EDITAR</button>';
+    
+    
+    h+='</div></div>';
+    h+='<div class="ef" id="ef_'+idx+'">';
+    FIELDS.forEach(function(f){
+      var val=e[f.k]||'';
+      if(f.k==='data_venda'){
+        if(!val){val=String(curDay).padStart(2,'0')+'/'+String(curMonth).padStart(2,'0')+'/'+new Date().getFullYear();}
+        else if(val.indexOf('/')===-1&&val.length===8){val=val.substring(0,2)+'/'+val.substring(2,4)+'/'+val.substring(4,8);setF(curDay,idx,'data_venda',val);}
+        else if(val.indexOf('/')===-1&&val.length>0){val=String(curDay).padStart(2,'0')+'/'+String(curMonth).padStart(2,'0')+'/'+new Date().getFullYear();setF(curDay,idx,'data_venda',val);}
+      }
+      if(f.obs){
+        h+='<div class="fg" style="grid-column:1/-1;"><label>'+f.l+'</label>';
+        h+='<textarea rows="2" disabled data-day="'+curDay+'" data-idx="'+idx+'" data-fk="'+f.k+'" oninput="setFfromEl(this)" style="width:100%;font-size:12px;padding:5px 7px;border-radius:6px;border:.5px solid var(--border2);background:var(--bg2);color:var(--text);font-family:var(--font);resize:none;opacity:.85;background:var(--bg2);">'+val.replace(/</g,'&lt;')+'</textarea>';
+        h+='</div>';
+      }else if(f.s){
+        var opts=f.s.map(function(o){return '<option value="'+o+'"'+(val===o?' selected':'')+'>'+( o||'- selecione -')+'</option>';}).join('');
+        h+='<div class="fg"><label>'+f.l+'</label><select disabled data-day="'+curDay+'" data-idx="'+idx+'" data-fk="'+f.k+'" onchange="setFfromEl(this)" style="opacity:.85;background:var(--bg2);">'+opts+'</select></div>';
+      }else{
+        if(f.type==='entrega'){
+          var entVal=val||'NAO_ENTREGOU';
+          var isNao=entVal==='NAO_ENTREGOU';
+          var isDev=entVal==='DEVOLVIDO';
+          var dispVal=(isNao||isDev)?'':entVal;
+          h+='<div class="fg" style="grid-column:span 2;"><label>'+f.l+'</label>';
+          h+='<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">';
+          h+='<select disabled data-day="'+curDay+'" data-idx="'+idx+'" data-fk="entregue_status" onchange="setEntregueSelect(this)" style="font-size:12px;height:28px;padding:2px 6px;border:.5px solid var(--border2);border-radius:var(--r);background:var(--bg2);color:var(--text);opacity:.85;">';
+          h+='<option value="nao"'+(isNao?' selected':'')+'>Não entregue</option>';
+          h+='<option value="sim"'+(!isNao&&!isDev?' selected':'')+'>Sim, entregue</option>';
+          h+='<option value="devolvido"'+(isDev?' selected':'')+'>Devolvido</option>';
+          h+='</select>';
+          h+='<input type="text" disabled value="'+dispVal+'" maxlength="10" data-day="'+curDay+'" data-idx="'+idx+'" data-fk="'+f.k+'" oninput="fmtDataInput(this);setFfromEl(this)" placeholder="DD/MM/AAAA" style="width:120px;font-size:12px;height:28px;padding:4px 7px;border:.5px solid var(--border2);border-radius:var(--r);background:var(--bg2);color:var(--text);letter-spacing:.05em;display:'+(isNao?'none':'inline-block')+'"/>';
+          h+='</div></div>';
+        }else if(f.auto){
+          h+='<div class="fg"><label>'+f.l+'</label><input type="text" readonly value="'+val.replace(/"/g,'&quot;')+'" style="opacity:.7;background:var(--bg2);cursor:default;"/></div>';
+        }else if(f.k==='data_venda'){
+          h+='<div class="fg"><label>'+f.l+'</label><input type="text" disabled maxlength="10" placeholder="DD/MM/AAAA" value="'+val.replace(/"/g,'&quot;')+'" data-day="'+curDay+'" data-idx="'+idx+'" data-fk="'+f.k+'" oninput="fmtDataInput(this);setFfromEl(this)" style="opacity:.85;background:var(--bg2);letter-spacing:.05em;width:120px;"/></div>';
+        }else{
+          var isValField=(f.k==='vv'||f.k==='vr');
+          var dispVal2=isValField?fmtBRL(val):val;
+          var dispPlaceholder=isValField?'R$ 1.000,00':'';
+          h+='<div class="fg"><label>'+f.l+'</label><input type="text" disabled placeholder="'+dispPlaceholder+'" value="'+dispVal2.replace(/"/g,'&quot;')+'" data-day="'+curDay+'" data-idx="'+idx+'" data-fk="'+f.k+'" oninput="setFfromElVal(this)" onblur="fmtFieldOnBlur(this)" style="opacity:.85;background:var(--bg2);"/></div>';
+        }
+      }
+    });
+    h+='</div>';
+    
+    h+='</div>';
+  });
+  var mx=maxDay(curMonth);
+  var navBtns='<div style="margin-top:10px;display:flex;justify-content:space-between;gap:8px;">';
+  if(curDay>1){navBtns+='<button onclick="goPrevDay()" style="font-size:12px;padding:6px 14px;background:#FFD43B;color:#1a1a18;border:none;border-radius:7px;cursor:pointer;font-family:var(--font);font-weight:700;">&larr; Voltar para o dia '+(curDay-1)+'</button>';}
+  else{navBtns+='<span></span>';}
+  if(curDay<mx){navBtns+='<button onclick="goNextDay()" style="font-size:12px;padding:6px 14px;background:#FFD43B;color:#1a1a18;border:none;border-radius:7px;cursor:pointer;font-family:var(--font);font-weight:700;">Ir para o dia '+(curDay+1)+' &rarr;</button>';}
+  navBtns+='</div>';
+  h+=navBtns;
+  h+='</div>';area.innerHTML=h;
+}
+
+function toggleEditCard(btn){
+  var idx=btn.getAttribute('data-idx');
+  var ef=document.getElementById('ef_'+idx);
+  var delBtn=document.getElementById('delbtn_'+idx);
+  if(!ef||!btn)return;
+  var locked=ef.querySelector('input,select,textarea').disabled;
+  if(locked){
+    ef.querySelectorAll('input,select,textarea').forEach(function(el){
+      el.disabled=false;el.style.opacity='1';el.style.background='var(--bg)';
+    });
+
+    btn.textContent='SALVAR';
+    btn.style.color='#1D9E75';
+    btn.style.borderColor='#1D9E75';
+    btn.style.fontWeight='700';
+    if(delBtn)delBtn.style.display='inline-block';
+    var clonBtn=document.getElementById('clonbtn_'+idx);
+    
+  } else {
+    // Force-save all editable fields before locking
+    ef.querySelectorAll('input[data-fk],select[data-fk],textarea[data-fk]').forEach(function(el){
+      var fk=el.dataset.fk;
+      if(!fk||fk==='entregue_status')return;
+      var day=parseInt(el.dataset.day);
+      var mo=parseInt(el.dataset.mo)||curMonth;
+      var eidx=el.dataset.idx;
+      // Save to correct month
+      var prevMonth=curMonth;var prevMd=md;
+      if(mo!==curMonth){curMonth=mo;md=lm(mo);}
+      if(fk==='data_venda'){
+        setF(day,eidx,fk,el.value);
+      } else if(fk==='vv'||fk==='vr'){
+        var raw=parseBRL(el.value);
+        if(raw)setF(day,eidx,fk,raw);
+      } else if(fk!=='data_entrega'){
+        setF(day,eidx,fk,el.value);
+      }
+      if(mo!==prevMonth){curMonth=prevMonth;md=prevMd;}
+    });
+    ef.querySelectorAll('input,select,textarea').forEach(function(el){
+      el.disabled=true;el.style.opacity='.85';el.style.background='var(--bg2)';
+    });
+    // Keep entregue select always enabled
+
+    btn.textContent='EDITAR';
+    btn.style.color='#378ADD';
+    btn.style.borderColor='#378ADD';
+    btn.style.fontWeight='700';
+    if(delBtn)delBtn.style.display='none';
+    toast('Venda salva!');
+  }
+}
+function buildDaySel(){
+  if(!curMonth)return;
+  var mx=maxDay(curMonth);var sel=document.getElementById('sel-new-day');
+  var h='<option value="">TODOS</option>'; var addNone=true;
+  for(var d=1;d<=mx;d++){
+    var wd=WD[new Date(2026,curMonth-1,d).getDay()];
+    var it=(curMonth===TM&&d===TD);
+    h+='<option value="'+d+'"'+(d===curDay?' selected':'')+'>'+d+' - '+wd+(it?' (hoje)':'')+'</option>';
+  }
+  sel.innerHTML=h;
+}
+
+function buildMonthSel(){
+  var sel=document.getElementById('sel-new-month');
+  sel.innerHTML='<option value="">TODOS</option>'+MONTHS.map(function(m){return '<option value="'+m.n+'"'+(m.n===curMonth?' selected':'')+'>2026 - '+m.l+'</option>';}).join('');
+  sel.onchange=function(){
+    curMonth=parseInt(sel.value)||null;
+    md=curMonth?lm(curMonth):{};curDay=(curMonth===TM?TD:null);
+    buildDaySel();
+    var sd=document.getElementById('sel-new-day');if(sd)sd.value=curDay||'';
+    updDynFilters();renderBadges();renderSales();renderAddBtn();updSummary();
+    if(curNav==='graf')renderGraf();updTopBtn();
+  };
+}
+
+function switchDay(day){curDay=day||null;renderSales();renderAddBtn();}
+
+function jumpDay(day,mo){
+  if(mo&&mo!==curMonth){
+    curMonth=mo;document.getElementById('sel-month').value=mo;
+    md=lm(curMonth);buildDaySel();
+  }
+  curDay=day;document.getElementById('sel-day').value=day;renderSales();renderAddBtn();
+}
+
+function switchNav(nav){document.body.setAttribute('data-nav',nav);
+  // Reset all button borders
+  ['nb-graf','nb-reg','nb-precos','nb-imp','nb-prec','nb-imp-me','nb-ml-me'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el){el.style.borderBottom='';el.style.removeProperty('--nb-active-color');}
+  });
+  curNav=nav;
+  document.getElementById('vw-reg').style.display=nav==='reg'?'':'none';
+  document.getElementById('vw-graf').style.display=nav==='graf'?'':'none';
+  var el_prec=document.getElementById('vw-prec');if(el_prec&&nav==='prec'){renderPrec();el_prec.style.display='';} else if(el_prec){el_prec.style.display='none';}
+    var el_precos=document.getElementById('vw-precos');if(el_precos&&nav==='precos'){  renderPrecos();el_precos.style.display='';} else if(el_precos){el_precos.style.display='none';}
+    var el_imp=document.getElementById('vw-imp');if(el_imp&&nav==='imp'){  renderImp();el_imp.style.display='';} else if(el_imp){el_imp.style.display='none';}
+  var vwimpme=document.getElementById('vw-imp-me');if(vwimpme&&nav==='imp-me'){var _imt=document.getElementById('imp-me-table');if(_imt&&!_imt.innerHTML)renderImpMe();vwimpme.style.display='';} else if(vwimpme){vwimpme.style.display='none';}
+    var el_ml_me=document.getElementById('vw-ml-me');if(el_ml_me&&nav==='ml-me'){var _pmt=document.getElementById('prec-me-table');if(_pmt&&!_pmt.innerHTML)renderPrecMe();el_ml_me.style.display='';} else if(el_ml_me){el_ml_me.style.display='none';}
+  document.getElementById('nb-reg').className='nb'+(nav==='reg'?' active':'');
+  var _rbx=document.getElementById('nb-reg');if(_rbx){_rbx.style.background='#6B7280';_rbx.style.color='#fff';_rbx.style.borderColor='#6B7280';if(nav==='reg')_rbx.style.setProperty('--nb-active-color','#6B7280');else _rbx.style.removeProperty('--nb-active-color');}
+  document.getElementById('nb-graf').className='nb'+(nav==='graf'?' active':'');
+  var _gbx=document.getElementById('nb-graf');if(_gbx){_gbx.style.background='#1A5EA8';_gbx.style.color='#fff';_gbx.style.borderColor='#1A5EA8';if(nav==='graf')_gbx.style.setProperty('--nb-active-color','#1A5EA8');else _gbx.style.removeProperty('--nb-active-color');}
+  var pb=document.getElementById('nb-prec');
+  if(pb){pb.className='nb nb-yellow'+(nav==='prec'?' active':'');pb.style.background='#FFE600';pb.style.color='#333';pb.style.borderColor='#FFE600';if(nav==='prec')pb.style.setProperty('--nb-active-color','#FFE600');else pb.style.removeProperty('--nb-active-color');}
+  var pb2=document.getElementById('nb-precos');
+  if(pb2){pb2.className='nb'+(nav==='precos'?' active':'');pb2.style.background='#1D9E75';pb2.style.color='#fff';pb2.style.borderColor='#1D9E75';if(nav==='precos')pb2.style.setProperty('--nb-active-color','#1D9E75');else pb2.style.removeProperty('--nb-active-color');}
+  var ib=document.getElementById('nb-imp');
+  if(ib){ib.className='nb'+(nav==='imp'?' active':'');ib.style.background='#C0392B';ib.style.color='#fff';ib.style.borderColor='#C0392B';if(nav==='imp')ib.style.setProperty('--nb-active-color','#C0392B');else ib.style.removeProperty('--nb-active-color');}
+  var ibme=document.getElementById('nb-imp-me');
+  if(ibme){ibme.className='nb'+(nav==='imp-me'?' active':'');ibme.style.background='#C0392B';ibme.style.color='#fff';ibme.style.borderColor='#C0392B';if(nav==='imp-me')ibme.style.setProperty('--nb-active-color','#C0392B');else ibme.style.removeProperty('--nb-active-color');}
+  var pbme=document.getElementById('nb-ml-me');
+  if(pbme){pbme.className='nb nb-yellow'+(nav==='ml-me'?' active':'');pbme.style.background='#FFE600';pbme.style.color='#333';pbme.style.borderColor='#FFE600';if(nav==='ml-me')pbme.style.setProperty('--nb-active-color','#FFE600');else pbme.style.removeProperty('--nb-active-color');}
+  // Filters visible on Registros and Gráficos, hidden on Precificação
+  var fw=document.querySelector('.filters-wrap');
+  var sb=document.getElementById('search-reg');
+  if(fw)fw.style.display=nav==='reg'?'':'none';
+  if(sb&&sb.parentElement)sb.parentElement.style.display=nav==='reg'?'':'none';
+  // Add-venda bar only on Registros
+  var avbar=document.getElementById('add-venda-bar');if(avbar){avbar.style.display=nav==='reg'?'flex':'none';}
+  var addPnl=document.getElementById('add-panel');if(addPnl)addPnl.style.display='none';
+  if(nav==='reg'){
+    updDynFilters();
+    // Auto-select most recent day with sales in current month
+    if(!viewDay){
+      var _data=lm(TM);var _mx=maxDay(TM);var _lastDay=null;
+      for(var _d=1;_d<=_mx;_d++){
+        if(!_data[_d])continue;
+        var _hasAny=Object.values(_data[_d]).some(function(e){return e&&e.motor;});
+        if(_hasAny){
+          var _effD=_d;
+          Object.values(_data[_d]).forEach(function(e){
+            if(e&&e.data_venda&&e.data_venda.length===10){var _p=e.data_venda.split('/');if(parseInt(_p[1])===TM)_effD=parseInt(_p[0]);}
+          });
+          if(_effD>(_lastDay||0))_lastDay=_effD;
+        }
+      }
+      if(_lastDay){viewDay=_lastDay;curDay=_lastDay;}
+    }
+    renderSales();updSummary();renderBadges();
+  }
+  if(nav==='graf'){buildGrafMotors();renderGraf();}
+  
+  
+  
+  
+}
+
+function renderGraf(){
+  var met=document.getElementById('gf-metrica').value;
+  var grp=document.getElementById('gf-grupo').value;
+  var spl=document.getElementById('gf-split').value;
+  var tip=document.getElementById('gf-tipo').value;
+  var gfLoja=document.getElementById('gf-loja')?document.getElementById('gf-loja').value:'';
+  var gfMes=document.getElementById('gf-mes')?document.getElementById('gf-mes').value:'';
+  var gfMot=document.getElementById('gf-motor')?document.getElementById('gf-motor').value:'';
+  var isV=met==='val';var isR=met==='vr';var isPct=met==='pct';
+  var fmt=function(v){if(isV||isR)return 'R$ '+Math.round(v).toLocaleString('pt-BR');if(isPct)return Math.round(v)+'%';return v;};
+  if(!grp&&spl)grp=spl;  // if only split set, use it as main group
+
+  // Build vis filtered by gf-mes and gf-motor
+  var gfDia=document.getElementById('gf-dia')?document.getElementById('gf-dia').value:'';
+  var gfEntrega=document.getElementById('gf-entrega')?document.getElementById('gf-entrega').value:'sim_nao';
+  var vis=allVisGraf(gfMes,gfMot,gfLoja,gfDia,gfEntrega);
+
+  var totals={q:0,v:0,r:0};
+  vis.forEach(function(v){totals.q++;var n=parseFloat((v.e.vv||'').replace(',','.'));if(!isNaN(n))totals.v+=n;var r=parseFloat((v.e.vr||'').replace(',','.'));if(!isNaN(r))totals.r+=r;});
+  var margPct=totals.v>0?Math.round(totals.r/totals.v*100):0;
+  var diasG={};vis.forEach(function(v){var _dvK;if(v.e.data_venda&&v.e.data_venda.length===10){var _p=v.e.data_venda.split('/');_dvK=_p[0]+'_'+_p[1];}else{_dvK=v.day+'_'+v.mo;}diasG[_dvK]=1;});
+  var nDiasG=Object.keys(diasG).length;
+  var diasOp=Math.max(1,Math.floor((new Date()-new Date(2026,3,21))/(1000*60*60*24))+1);
+  var pctDiasG=Math.round(nDiasG/diasOp*100);
+  var projG=calcProjection(totals.q,totals.v,totals.r,nDiasG);
+  var pgS='<div style="font-size:10px;color:rgba(255,255,255,.65);margin-top:4px;padding-top:4px;border-top:.5px solid rgba(255,255,255,.2);">'+projG.label+': ';
+  document.getElementById('totcards').innerHTML=
+    '<div class="mc"><div class="mc-l">Vendas</div><div class="mc-v">'+totals.q+'</div>'+pgS+projG.qtd+' vendas</div></div>'+
+    '<div class="mc"><div class="mc-l">Dias com venda</div><div class="mc-v">'+nDiasG+'</div>'+
+    '<div style="font-size:11px;color:rgba(255,255,255,.75);margin-top:5px;padding-top:5px;border-top:.5px solid rgba(255,255,255,.25);text-align:center;">'+pctDiasG+'% de '+diasOp+' dias op.</div></div>'+
+    '<div class="mc"><div class="mc-l">Receita</div><div class="mc-v" style="font-size:17px;">R$ '+totals.v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div>'+
+    '<div style="font-size:10px;color:rgba(255,255,255,.65);margin-top:3px;">Média: R$ '+(totals.q>0?(totals.v/totals.q).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'0,00')+' / venda</div>'+
+    pgS+'R$ '+projG.val.toLocaleString('pt-BR')+'</div></div>'+
+    '<div class="mc"><div class="mc-l">Retorno</div><div class="mc-v" style="font-size:17px;">R$ '+totals.r.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div>'+
+    '<div style="font-size:10px;color:rgba(255,255,255,.65);margin-top:3px;">Média: R$ '+(totals.q>0?(totals.r/totals.q).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'0,00')+' / venda</div>'+
+    pgS+'R$ '+projG.ret.toLocaleString('pt-BR')+'</div></div>'+
+    '<div class="mc"><div class="mc-l">Retorno / Receita</div><div class="mc-v" style="font-size:22px;">'+margPct+'%</div>'+
+    '<div style="font-size:11px;color:rgba(255,255,255,.75);margin-top:5px;padding-top:5px;border-top:.5px solid rgba(255,255,255,.25);text-align:center;">R$ '+Math.round(totals.r).toLocaleString('pt-BR')+' de R$ '+Math.round(totals.v).toLocaleString('pt-BR')+'</div></div>';
+  if(gc){gc.destroy();gc=null;}
+  // No grouping selected — show total as single bar
+  if(!grp){grp='_total';}
+  var gl={_total:'Total',loja:'Loja',motor:'Motor',mkt:'Mkt Place',tipo_anuncio:'Tipo de Anúncio',pub:'Publicidade',estado:'Estado',obs:'Observação',regiao:'Região',outros_itens:'Outros Itens',cidade:'Cidade',entregue:'Entregue'};
+  var metLabel=isPct?'% Retorno s/ Receita':isR?'Valor de Retorno':isV?'Receita':'Unidades';
+  document.getElementById('graf-titulo').textContent=metLabel+' por '+gl[grp]+(spl&&spl!==grp?' / '+gl[spl]:'');
+  if(!vis.length){document.getElementById('graf-leg').innerHTML='<span style="font-size:12px;color:var(--text2);">Nenhuma venda encontrada.</span>';return;}
+  var grafCanvas=document.getElementById('grafChart');
+  var grafW=grafCanvas.parentElement?grafCanvas.parentElement.clientWidth||grafCanvas.parentElement.offsetWidth:800;
+  grafCanvas.width=grafW||800;grafCanvas.height=360;
+  var ctx=grafCanvas.getContext('2d');var cfg;
+  if(!spl||spl===grp){
+    var grps={};
+    vis.forEach(function(v){var k=grp==='regiao'?getRegiao(v.e.estado||''):grp==='dia'?(v.e.data_venda&&v.e.data_venda.length===10?v.e.data_venda.substring(0,2):'N/A'):grp==='mes'?(v.e.data_venda&&v.e.data_venda.length===10?v.e.data_venda.substring(3,5)+'/'+v.e.data_venda.substring(6):'N/A'):(v.e[grp]||'N/A').trim()||'N/A';if(!grps[k])grps[k]={q:0,v:0,r:0};grps[k].q++;var n=parseFloat((v.e.vv||'').replace(',','.'));if(!isNaN(n))grps[k].v+=n;var r=parseFloat((v.e.vr||'').replace(',','.'));if(!isNaN(r))grps[k].r+=r;});
+    var labs=Object.keys(grps).sort(function(a,b){var va=isPct?(grps[a].v>0?grps[a].r/grps[a].v*100:0):isR?grps[a].r:isV?grps[a].v:grps[a].q;var vb=isPct?(grps[b].v>0?grps[b].r/grps[b].v*100:0):isR?grps[b].r:isV?grps[b].v:grps[b].q;return vb-va;});
+    var vals=labs.map(function(l){return isPct?(grps[l].v>0?Math.round(grps[l].r/grps[l].v*100):0):isR?grps[l].r:isV?grps[l].v:grps[l].q;});
+    var tot=vals.reduce(function(a,b){return a+b;},0)||1;
+    var bgC=labs.map(function(l,i){return(grp==='loja'&&LC[l]?LC[l]:CC[i%CC.length])+'CC';});
+    var bdC=labs.map(function(l,i){return grp==='loja'&&LC[l]?LC[l]:CC[i%CC.length];});
+    document.getElementById('graf-leg').innerHTML=labs.map(function(l,i){return '<span class="leg-item"><span class="leg-sq" style="background:'+bdC[i]+'"></span>'+l+' '+Math.round(vals[i]/tot*100)+'%</span>';}).join('');
+    if(tip==='bar'){cfg={type:'bar',data:{labels:labs,datasets:[{data:vals,backgroundColor:bgC,borderColor:bdC,borderWidth:1}]},options:{responsive:false,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{anchor:'end',align:'start',clamp:true,color:'#fff',font:{size:14,weight:'bold'},formatter:function(v){return v>0?fmt(v):''}},tooltip:{callbacks:{label:function(c){return fmt(c.parsed.y);}}}},scales:{x:{ticks:{font:{size:11},maxRotation:45,autoSkip:false}},y:{beginAtZero:true,ticks:{callback:function(v){return fmt(v);}}}}}};
+    }else{cfg={type:'pie',data:{labels:labs,datasets:[{data:vals,backgroundColor:bgC,borderColor:bdC,borderWidth:1}]},options:{responsive:false,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{color:'#fff',font:{size:14,weight:'bold'},formatter:function(v,ctx){var pct=Math.round(v/tot*100);return pct>3?labs[ctx.dataIndex]+'\n'+fmt(v):''}},tooltip:{callbacks:{label:function(c){return c.label+': '+fmt(c.parsed)+' ('+Math.round(c.parsed/tot*100)+'%)';}}}}}}}
+  }else{
+    var grpKeys={};var splKeys={};
+    var _gkFn=function(key,e){if(key==='regiao')return getRegiao(e.estado||'');if(key==='dia')return e.data_venda&&e.data_venda.length===10?e.data_venda.substring(0,2):'N/A';if(key==='mes')return e.data_venda&&e.data_venda.length===10?e.data_venda.substring(3,5)+'/'+e.data_venda.substring(6):'N/A';return (e[key]||'N/A').trim()||'N/A';};
+    vis.forEach(function(v){grpKeys[_gkFn(grp,v.e)]=1;splKeys[_gkFn(spl,v.e)]=1;});
+    var gLabels=Object.keys(grpKeys).sort();var sLabels=Object.keys(splKeys).sort();
+    var matrix={};sLabels.forEach(function(sk){matrix[sk]={};gLabels.forEach(function(gk){matrix[sk][gk]={q:0,v:0,r:0};});});
+    vis.forEach(function(v){var _getGrpKey=function(key,e){
+        if(key==='_total')return 'Total';
+        if(key==='regiao')return getRegiao(e.estado||'');
+        if(key==='dia')return e.data_venda&&e.data_venda.length===10?e.data_venda.substring(0,2):'N/A';
+        if(key==='mes')return e.data_venda&&e.data_venda.length===10?e.data_venda.substring(3,5)+'/'+e.data_venda.substring(6):'N/A';
+        if(key==='entregue'){var de=e.data_entrega||'';if(de==='DEVOLVIDO')return 'DEVOLVIDO';if(!de||de==='NAO_ENTREGOU')return 'NÃO';return 'SIM';}
+        return (e[key]||'N/A').trim()||'N/A';
+      };
+      var gk=_getGrpKey(grp,v.e);var sk=_getGrpKey(spl,v.e);matrix[sk][gk].q++;var n=parseFloat((v.e.vv||'').replace(',','.'));if(!isNaN(n))matrix[sk][gk].v+=n;var r=parseFloat((v.e.vr||'').replace(',','.'));if(!isNaN(r))matrix[sk][gk].r+=r;});
+    var datasets=sLabels.map(function(sk,i){var color=spl==='loja'&&LC[sk]?LC[sk]:CC[i%CC.length];return {label:sk,data:gLabels.map(function(gk){var d=matrix[sk][gk];return isPct?(d.v>0?Math.round(d.r/d.v*100):0):isR?d.r:isV?d.v:d.q;}),backgroundColor:color+'CC',borderColor:color,borderWidth:1};});
+    document.getElementById('graf-leg').innerHTML=sLabels.map(function(sk,i){var color=spl==='loja'&&LC[sk]?LC[sk]:CC[i%CC.length];return '<span class="leg-item"><span class="leg-sq" style="background:'+color+'"></span>'+sk+'</span>';}).join('');
+    if(tip==='pie'){var flatL=[];var flatV=[];var flatBg=[];var flatBd=[];sLabels.forEach(function(sk,i){var color=spl==='loja'&&LC[sk]?LC[sk]:CC[i%CC.length];gLabels.forEach(function(gk){var d=matrix[sk][gk];var val=isPct?(d.v>0?Math.round(d.r/d.v*100):0):isR?d.r:isV?d.v:d.q;if(val>0){flatL.push(gk+' / '+sk);flatV.push(val);flatBg.push(color+'CC');flatBd.push(color);}});});var ftot=flatV.reduce(function(a,b){return a+b;},0)||1;cfg={type:'pie',data:{labels:flatL,datasets:[{data:flatV,backgroundColor:flatBg,borderColor:flatBd,borderWidth:1}]},options:{responsive:false,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{color:'#fff',font:{size:13,weight:'bold'},formatter:function(v,ctx){var pct=Math.round(v/ftot*100);return pct>3?flatL[ctx.dataIndex]+'\n'+fmt(v):''}},tooltip:{callbacks:{label:function(c){return c.label+': '+fmt(c.parsed)+' ('+Math.round(c.parsed/ftot*100)+'%)';}}}}}};
+    }else{cfg={type:'bar',data:{labels:gLabels,datasets:datasets},options:{responsive:false,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{anchor:'end',align:'start',clamp:true,color:'#fff',font:{size:13,weight:'bold'},formatter:function(v){return v>0?fmt(v):''}},tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+fmt(c.parsed.y);}}}},scales:{x:{ticks:{font:{size:11},maxRotation:45,autoSkip:false}},y:{beginAtZero:true,ticks:{callback:function(v){return fmt(v);}}}}}}}
+  }
+  gc=new Chart(ctx,cfg);
+  // Force resize to fix zero-dimension canvas on first render
+  setTimeout(function(){if(gc)gc.resize();},50);
+}
+
+function exportChart(fmt){
+  var canvas=document.getElementById('grafChart');
+  if(!canvas){toast('Nenhum grafico para exportar.');return;}
+
+  // Build a rich title with filter context
+  var titulo=document.getElementById('graf-titulo').textContent||'Gráfico';
+  var partes=[];
+  var fmes=document.getElementById('f-mes');
+  var fmotor=document.getElementById('gf-motor');
+  var fmet=document.getElementById('gf-metrica');
+  if(fmes&&fmes.options[fmes.selectedIndex])partes.push(fmes.options[fmes.selectedIndex].text!=='Todos'?fmes.options[fmes.selectedIndex].text:'Todos os meses');
+  if(fmotor&&fmotor.value)partes.push(fmotor.value);
+  var subtitulo=partes.join(' | ');
+  var dataExport=new Date().toLocaleDateString('pt-BR');
+  var filename=(titulo+' '+subtitulo).replace(/[^a-zA-Z0-9]/g,'_').toLowerCase().replace(/_+/g,'_');
+
+  var PADDING=48;
+  var TITLE_H=PADDING;
+
+  if(fmt==='png'||fmt==='jpg'){
+    var mime=fmt==='jpg'?'image/jpeg':'image/png';
+    var bgColor=fmt==='jpg'?'#ffffff':'#0d2e4a';
+    var textColor=fmt==='jpg'?'#0d2e4a':'#ffffff';
+    var subColor=fmt==='jpg'?'#2e6a96':'rgba(255,255,255,0.7)';
+    var tmpCanvas=document.createElement('canvas');
+    tmpCanvas.width=canvas.width;
+    tmpCanvas.height=canvas.height+TITLE_H+32;
+    var ctx=tmpCanvas.getContext('2d');
+    // Background
+    ctx.fillStyle=bgColor;ctx.fillRect(0,0,tmpCanvas.width,tmpCanvas.height);
+    // Title
+    ctx.fillStyle=textColor;ctx.font='bold 16px sans-serif';ctx.textAlign='center';
+    ctx.fillText(titulo,tmpCanvas.width/2,TITLE_H/2+6);
+    // Subtitle
+    if(subtitulo){ctx.fillStyle=subColor;ctx.font='12px sans-serif';ctx.fillText(subtitulo,tmpCanvas.width/2,TITLE_H/2+24);}
+    // Date bottom right
+    ctx.fillStyle=subColor;ctx.font='11px sans-serif';ctx.textAlign='right';
+    ctx.fillText('Paraqueda Náutica | '+dataExport,tmpCanvas.width-12,tmpCanvas.height-10);
+    // Chart
+    ctx.drawImage(canvas,0,TITLE_H+16);
+    var link=document.createElement('a');
+    link.download=filename+'.'+fmt;
+    link.href=tmpCanvas.toDataURL(mime,0.95);
+    link.click();
+    toast('Exportado como '+fmt.toUpperCase()+'!');
+  } else if(fmt==='pdf'){
+    try{
+      var imgData=canvas.toDataURL('image/png');
+      var pdf=new window.jspdf.jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+      var pW=pdf.internal.pageSize.getWidth();
+      var pH=pdf.internal.pageSize.getHeight();
+      var margin=15;
+      // Header background
+      pdf.setFillColor(13,46,74);pdf.rect(0,0,pW,20,'F');
+      // Title
+      pdf.setFontSize(14);pdf.setTextColor(255,255,255);
+      pdf.text(titulo,pW/2,10,{align:'center'});
+      // Subtitle
+      if(subtitulo){pdf.setFontSize(9);pdf.setTextColor(120,185,224);pdf.text(subtitulo,pW/2,16,{align:'center'});}
+      // Chart
+      var maxW=pW-margin*2;var maxH=pH-margin-24;
+      var ratio=canvas.width/canvas.height;
+      var w=maxW;var h=w/ratio;
+      if(h>maxH){h=maxH;w=h*ratio;}
+      var x=(pW-w)/2;
+      pdf.addImage(imgData,'PNG',x,22,w,h);
+      // Footer
+      pdf.setFontSize(8);pdf.setTextColor(150,150,150);
+      pdf.text('Paraqueda Náutica | '+dataExport,pW-margin,pH-5,{align:'right'});
+      pdf.save(filename+'.pdf');
+      toast('Exportado como PDF!');
+    }catch(e){toast('Erro ao gerar PDF: '+e.message);}
+  }
+}
+
+function exportBackup(){
+  // Collect all pnv3 keys from localStorage
+  var backup={version:1,date:new Date().toISOString(),data:{}};
+  for(var i=0;i<localStorage.length;i++){
+    var k=localStorage.key(i);
+    if(k&&k.startsWith('pnv3:')){
+      try{backup.data[k]=JSON.parse(localStorage.getItem(k));}
+      catch(e){backup.data[k]=localStorage.getItem(k);}
+    }
+  }
+  var json=JSON.stringify(backup,null,2);
+  var blob=new Blob([json],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  a.download='backup_motores_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Backup exportado!');
+}
+function importBackup(input){
+  var file=input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var backup=JSON.parse(e.target.result);
+      var data=backup.data||backup;
+      var count=0;
+      Object.keys(data).forEach(function(k){
+        if(k.startsWith('pnv3:')){
+          localStorage.setItem(k,JSON.stringify(data[k]));
+          count++;
+        }
+      });
+      toast('Backup importado! '+count+' chaves restauradas.');
+      setTimeout(function(){location.reload();},1000);
+    }catch(err){
+      toast('Erro ao importar: '+err.message);
+    }
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+function exportXLSX(){
+  var wb=XLSX.utils.book_new();
+  MONTHS.forEach(function(mo){
+    var mx=mo.n===TM?TD:dim(mo.n);var d=lm(mo.n);
+    var rows=[['Dia'].concat(FIELDS.map(function(f){return f.l;}))];
+    for(var day=1;day<=mx;day++){if(d[day])Object.values(d[day]).forEach(function(e){rows.push([day].concat(FIELDS.map(function(f){return e[f.k]||'';}))); });}
+    if(rows.length>1){var ws=XLSX.utils.aoa_to_sheet(rows);XLSX.utils.book_append_sheet(wb,ws,mo.l);}
+  });
+  if(!wb.SheetNames.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Dia'].concat(FIELDS.map(function(f){return f.l;}))]),'Atual');
+  XLSX.writeFile(wb,'Vendas_Motores_2026.xlsx');toast('Excel exportado!');
+}
+
+// Migrate existing entries: fill regiao where missing
+(function migrateRegiao(){
+  MONTHS.forEach(function(mo){
+    var data=lm(mo.n);var changed=false;
+    Object.keys(data).forEach(function(day){
+      if(!data[day])return;
+      Object.keys(data[day]).forEach(function(idx){
+        var e=data[day][idx];
+        if(e&&e.estado&&!e.regiao){e.regiao=getRegiao(e.estado);changed=true;}
+        if(e&&!e.data_entrega){e.data_entrega='NAO_ENTREGOU';changed=true;}
+      });
+    });
+    if(changed){try{localStorage.setItem(sk(mo.n),JSON.stringify(data));}catch(err){}}
+  });
+})();
+// UI initialized by inicializarApp() after Supabase authentication
+</script>
+
+
+
+<div id="del-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:28px 32px;max-width:360px;width:90%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.3);">
+    <div style="font-size:32px;margin-bottom:8px;">🗑️</div>
+    <div style="font-weight:700;font-size:16px;color:#C0392B;margin-bottom:8px;">Excluir venda?</div>
+    <div style="font-size:13px;color:#666;margin-bottom:20px;">Esta ação não pode ser desfeita.</div>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button id="del-yes" style="padding:9px 24px;background:#C0392B;color:#fff;border:none;border-radius:7px;cursor:pointer;font-size:13px;font-weight:700;">Sim, excluir</button>
+      <button onclick="document.getElementById('del-modal').style.display='none'" style="padding:9px 24px;background:#eee;color:#333;border:none;border-radius:7px;cursor:pointer;font-size:13px;">Cancelar</button>
+    </div>
+  </div>
+</div>
+<script>
+function pedirExclusao(mo,day,idx){
+  var modal=document.getElementById('del-modal');
+  modal.style.display='flex';
+  document.getElementById('del-yes').onclick=function(){
+    modal.style.display='none';
+    var data=lm(mo);
+    if(data[day]&&data[day][idx]){
+      delete data[day][idx];
+      if(Object.keys(data[day]).length===0)delete data[day];
+      sm(mo,data);
+      if(mo===curMonth)md=lm(mo);
+    }
+    updDynFilters();renderSales();renderBadges();updSummary();
+    toast('Venda excluída!');
+  };
+}
+</script>
+
+<script>
+// ── PRECIFICAÇÃO ──────────────────────────────────────────────
+var PREC_FIELDS=[
+  {k:'preco_compra', l:'Preço de\nCompra', fmt:'calc_brl',  detail:false, color:'#555'},
+  {k:'preco_partida',l:'Preço de\nPartida',fmt:'calc_brl',  detail:false, color:'#111'},
+  {k:'frete',     l:'Frete',             fmt:'brl',       detail:false, color:'#C0392B'},
+  {k:'com_cla',   l:'Comissão\nClássico', fmt:'pct',       detail:false, color:'#C0392B'},
+  {k:'_fcla',     l:'Preço\nClássico',    fmt:'final_cla', detail:false, color:'#1D9E75'},
+  {k:'com_pre',   l:'Comissão\nPremium',  fmt:'pct',       detail:false, color:'#C0392B'},
+  {k:'_fpre',     l:'Preço\nPremium',     fmt:'final_pre', detail:false, color:'#1D9E75'},
+];
+
+var _precDetail=false;
+function togglePrecDetail(){
+  _precDetail=!_precDetail;
+  var btn=document.getElementById('btn-detail');
+  if(btn)btn.textContent=_precDetail?'◂ Ocultar detalhes':'▸ Ver detalhes REMOVED';
+  document.querySelectorAll('.detail-col').forEach(function(el){
+    el.style.display=_precDetail?'table-cell':'none';
+  });
+}
+function lmPrec(){if(_precCache)return _precCache;try{var r=localStorage.getItem('pnv3:prec');return r?JSON.parse(r):{}}catch(e){return {};}}
+var _precCache=null;
+function smPrec(d){_precCache=d;try{localStorage.setItem('pnv3:prec',JSON.stringify(d));}catch(e){}}
+
+function parsePrec(v){
+  if(!v&&v!==0)return 0;
+  // Handle values stored as "13.61" or "13,61" or "1361" (raw digits/100)
+  var s=v.toString().replace('%','').trim();
+  // If contains dot, it's already decimal (e.g. "13.61")
+  if(s.indexOf('.')!==-1)return parseFloat(s)||0;
+  // If contains comma, convert (e.g. "13,61" → 13.61)
+  if(s.indexOf(',')!==-1)return parseFloat(s.replace(',','.'))||0;
+  // Raw integer stored by mask (e.g. "1361" → 13.61)
+  return parseFloat(s)||0;
+}
+function calcPrecRow(row, com_pct){
+  // Returns all intermediate values
+  // cred_icms always uses 12% (ICMS rate on purchase), regardless of commission
+  var custo=parsePrec(row.custo)||0;
+  var lucro=parsePrec(row.lucro)||10;
+  var frete=parsePrec(row.frete)||0;
+  var ipi=0.85;    // fator desconto fixo
+  var ipiFr=1.05;  // fator IPI fixo
+  var deb=0.2953;  // débitos fiscais fixo
+  var custo_cipi = custo * ipi;
+  var custo_ctot = custo_cipi / ipiFr;
+  var cred_icms  = custo_ctot * 0.12;        // crédito ICMS fixo em 12%
+  var cred_pis   = custo_cipi * 0.0925;
+  var cred_tot   = cred_icms + cred_pis;
+  var custo_simp = custo_cipi - cred_tot;    // sempre o mesmo independente da comissão
+  var divisor    = 1 - com_pct/100 - deb;
+  var pf         = divisor > 0 ? (frete + custo_simp + (lucro/100)*custo_cipi) / divisor : 0;
+  var debitos    = pf * deb;
+  return {custo_cipi:custo_cipi, custo_ctot:custo_ctot, cred_icms:cred_icms,
+          cred_pis:cred_pis, cred_tot:cred_tot, custo_simp:custo_simp,
+          debitos:debitos, pf:pf};
+}
+function calcPrec(row,comKey){
+  var partida=parseFloat(row.preco_partida)||0;
+  var frete=parsePrec(row.frete)||0;
+  var base=partida+frete;
+  // Multiplier = 1 / (1 - com/100) — same logic for any commission
+  var com=comKey==='com_pre'?parsePrec(row.com_pre)||17:parsePrec(row.com_cla)||12;
+  var mult=1/(1-com/100);
+  var raw=base*mult;
+  // Ceil to 2 decimal places
+  return Math.ceil(raw*100)/100;
+}
+
+function fmtPrec(val,fmt){
+  if(!val&&val!==0)return '';
+  var n=parseFloat(String(val).replace(',','.'));
+  if(isNaN(n))return '';
+  if(fmt==='brl'){
+    var c=Math.round(n*100); var r=Math.floor(c/100); var ct=c%100;
+    return r.toLocaleString('pt-BR')+','+(ct<10?'0':'')+ct;
+  }
+  var d=Math.round(n*100); var i=Math.floor(d/100); var dc=d%100;
+  return i+','+(dc<10?'0':'')+dc+'%';
+}
+
+function renderPrec(){
+  var el=document.getElementById('prec-table');
+  if(!el)return;
+  var data=lmPrec();
+  var MOTORS2=typeof MOTORS!=='undefined'?MOTORS:[];
+
+  // Pull precos data
+  var precosD={};
+  try{precosD=JSON.parse(localStorage.getItem('pnv3:precos')||'{}');}catch(e){}
+
+  var h='<table style="width:100%;border-collapse:separate;border-spacing:0;font-size:11px;table-layout:fixed;">';
+  h+='<thead><tr>';
+  var headers=['Motor','Preço de\nCompra','Preço de\nPartida','Lucro\nDesejado','Frete','Comissão\nClássico','Preço\nClássico','Comissão\nPremium','Preço\nPremium'];
+  var thStyle='background:#FFD600;color:#333;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;padding:5px 3px;height:48px;vertical-align:middle;white-space:pre-line;line-height:1.3;';
+  h+='<th style="'+thStyle+'border-radius:8px 0 0 0;">Motor</th>';
+  ['Preço de\nCompra','Preço de\nPartida','Frete','Comissão\nClássico','Preço\nClássico','Comissão\nPremium','Preço\nPremium','Lucro\nDesejado','Lucro\nDesejado R$','','Preço Teste\nClássico R$','Lucro Teste\nClássico %','Preço Teste\nPremium R$','Lucro Teste\nPremium %'].forEach(function(l,i){
+    var br=i===13?'border-radius:0 8px 0 0;':'';
+    var sep=i===9?'':'';
+    h+=(l===''?'<th style="background:#D35400;width:4px;padding:0;"></th>':'<th style="'+thStyle+br+sep+'">'+l+'</th>');
+  });
+  h+='</tr></thead><tbody>';
+
+  MOTORS2.forEach(function(motor){
+    var row=data[motor]||{};
+    // Defaults
+    if(!row.lucro)row.lucro='10';
+    if(!row.com_cla)row.com_cla='12';
+    if(!row.com_pre)row.com_pre='17';
+    if(!row.frete)row.frete='0';
+
+    // Pull preco_compra from precos tab
+    var precoCompra=parseFloat((precosD[motor]||{}).preco)||0;
+    var frete=parseFloat(row.frete)||0;  // needed for precoPartida formula
+    // Preço de Partida derivado do Lucro Desejado (IMPOSTOS)
+    // Fórmula: X = (L*s1 + custoFinal + frete*deb/(1-com)) / (1 - deb/(1-com))
+    var precoPartida=0;
+    try{
+      var _impD=typeof _impCache!=='undefined'&&_impCache?_impCache:(function(){try{return JSON.parse(localStorage.getItem('pnv3:imp')||'{}')}catch(e){return {}}}());
+      var _impRow=_impD[motor]||{};
+      var _lucro=parseFloat(_impRow.lucro)||0;
+      if(_lucro>0&&_lucro<100){
+        var _dl=_impRow.desc_lista!==undefined&&_impRow.desc_lista!==''?parseFloat(_impRow.desc_lista):15;
+        var _di=_impRow.desc_ipi!==undefined&&_impRow.desc_ipi!==''?parseFloat(_impRow.desc_ipi):1.05;
+        var _icms=_impRow.icms!==undefined&&_impRow.icms!==''?parseFloat(_impRow.icms):12;
+        var _pis=_impRow.pis_cof!==undefined&&_impRow.pis_cof!==''?parseFloat(_impRow.pis_cof):9.25;
+        var _comCla=parseFloat(row.com_cla)||12;
+        var _s1=precoCompra*(1-_dl/100);
+        var _s2=_di>0?_s1/_di:_s1;
+        var _custoFinal=_s1-_s2*(_icms/100)-_s1*(_pis/100);
+        var _revisao=_impRow.revisao!==undefined&&_impRow.revisao!==''?parseFloat(_impRow.revisao):0;
+        var _deb=0.2953;
+        var _c=_comCla/100;
+        var _num=(_lucro/100)*_s1+(_custoFinal+_revisao)+frete*_deb/(1-_c);
+        var _den=1-_deb/(1-_c);
+        if(_den!==0)precoPartida=_num/_den;
+      }
+    }catch(e){}
+    if(!precoPartida)precoPartida=precoCompra*1.20404;
+    var base=precoPartida+frete;
+    var comCla=parseFloat(row.com_cla)||12;
+    var comPre=parseFloat(row.com_pre)||17;
+    var precoCla=base>0?Math.ceil(base/(1-comCla/100)*100)/100:0;
+    var precoPremi=base>0?Math.ceil(base/(1-comPre/100)*100)/100:0;
+
+    var fmtN=function(n){return n>0?n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'';};
+    var fmtP=function(n){return n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';};
+    var td='padding:6px 4px;border-bottom:1px solid #e8d800;vertical-align:middle;height:36px;box-sizing:border-box;';
+    var inpS='width:100%;box-sizing:border-box;text-align:center;font-size:11px;font-weight:600;padding:3px 2px;border:1px solid #e0c800;border-radius:4px;background:#fffff0;color:#333;font-family:var(--font);';
+    var roS='text-align:center;font-weight:700;color:#333;';
+    var grn='text-align:center;font-weight:700;color:#1D9E75;';
+
+    h+='<tr data-motor="'+motor.replace(/"/g,'&quot;')+'">';
+    h+='<td style="'+td+'text-align:right;font-weight:700;white-space:nowrap;">'+motor+'</td>';
+    // Preço de Compra (readonly)
+    h+='<td style="'+td+roS+'">'+fmtN(precoCompra)+'</td>';
+    // Preço de Partida (readonly)
+    h+='<td style="'+td+roS+'">'+fmtN(precoPartida)+'</td>';
+    // Frete (editable brl)
+    h+='<td style="'+td+'"><input type="text" data-fk="frete" data-fmt="brl" value="'+fmtN(parseFloat(row.frete)||0)+'" style="'+inpS+'" oninput="precIn(this)" onblur="precBl(this)" onkeydown="precKD(event,this)" onfocus="this.select()"/></td>';
+    // Comissão Clássico (editable pct)
+    h+='<td style="'+td+'"><input type="text" data-fk="com_cla" data-fmt="pct" value="'+fmtP(comCla)+'" style="'+inpS+'" oninput="precIn(this)" onblur="precBl(this)" onkeydown="precKD(event,this)" onfocus="this.select()"/></td>';
+    // Preço Clássico (readonly calc)
+    h+='<td style="'+td+grn+'">'+fmtN(precoCla)+'</td>';
+    // Comissão Premium (editable pct)
+    h+='<td style="'+td+'"><input type="text" data-fk="com_pre" data-fmt="pct" value="'+fmtP(comPre)+'" style="'+inpS+'" oninput="precIn(this)" onblur="precBl(this)" onkeydown="precKD(event,this)" onfocus="this.select()"/></td>';
+    // Preço Premium (readonly calc)
+    h+='<td style="'+td+grn+'">'+fmtN(precoPremi)+'</td>';
+    // Lucro Desejado — editável, sincronizado com IMPOSTOS
+    var _impD2=typeof _impCache!=='undefined'&&_impCache?_impCache:(function(){try{return JSON.parse(localStorage.getItem('pnv3:imp')||'{}')}catch(e){return {}}}());
+    var _lucroVal=parseFloat((_impD2[motor]||{}).lucro)||0;
+    var _lucroDisp=_lucroVal>0?_lucroVal.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%':'';
+    h+='<td style="'+td+'">';
+    h+='<input type="text" data-fk="lucro" data-fmt="pct"';
+    h+=' value="'+_lucroDisp+'" placeholder="0,00%"';
+    h+=' style="'+inpS+'"';
+    h+=' oninput="precIn(this)" onblur="precLucroBl(this)" onkeydown="precKD(event,this)" onfocus="this.select()"/>';
+    h+='</td>';
+    // Lucro Desejado R$
+    var _impD3=typeof _impCache!=='undefined'&&_impCache?_impCache:(function(){try{return JSON.parse(localStorage.getItem('pnv3:imp')||'{}')}catch(e){return {}}}());
+    var _impRow3=(_impD3[motor]||{});
+    var _dl3=_impRow3.desc_lista!==undefined&&_impRow3.desc_lista!==''?parseFloat(_impRow3.desc_lista):15;
+    var _s1lr=precoCompra*(1-_dl3/100);
+    var _lucroBRLlr=_lucroVal>0?(_lucroVal/100)*_s1lr:0;
+    h+='<td style="'+td+'text-align:center;font-weight:700;color:#1D9E75;">'+fmtN(_lucroBRLlr)+'</td>';
+    h+='<td style="background:#D35400;padding:0;width:4px;"></td>';
+    // Preço Teste (editável, salvo)
+    var _pvTeste=parseFloat((lmPrec()[motor]||{}).pv_teste)||0;
+    var _pvTesteDisp=_pvTeste>0?_pvTeste.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'';
+    h+='<td style="'+td+'"><input type="text" data-fk="pv_teste" data-fmt="brl" value="'+_pvTesteDisp+'" placeholder="0,00" style="'+inpS+'background:#fffbe6;" oninput="precTesteIn(this,&quot;lr&quot;)" onblur="precTesteCalc(this,&quot;lr&quot;)" onkeydown="precTesteKD(event,this,&quot;lr&quot;)" onfocus="this.select()"/></td>';
+    // Lucro Teste % (calculado)
+    var _lrTesteVal=parseFloat((lmPrec()[motor]||{}).lucro_teste)||0;
+    var _lrTesteDisp=_lrTesteVal!==0?_lrTesteVal.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%':'';
+    var _lrTesteColor=_lrTesteVal>=0?'#1D9E75':'#C0392B';
+    h+='<td style="'+td+'text-align:center;font-weight:700;color:'+_lrTesteColor+';">'+_lrTesteDisp+'</td>';
+    // Preço Teste Premium (LR)
+    var _pvTesteP=parseFloat((lmPrec()[motor]||{}).pv_teste_p)||0;
+    var _pvTestePDisp=_pvTesteP>0?_pvTesteP.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'';
+    h+='<td style="'+td+'"><input type="text" data-fk="pv_teste_p" data-fmt="brl" value="'+_pvTestePDisp+'" placeholder="0,00" style="'+inpS+'background:#fffbe6;" oninput="precTesteIn(this,&quot;lr_pre&quot;)" onblur="precTesteCalc(this,&quot;lr_pre&quot;)" onkeydown="precTesteKD(event,this,&quot;lr_pre&quot;)" onfocus="this.select()"/></td>';
+    var _lrTestePVal=parseFloat((lmPrec()[motor]||{}).lucro_teste_p)||0;
+    var _lrTestePDisp=_lrTestePVal!==0?_lrTestePVal.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%':'';
+    h+='<td style="'+td+'text-align:center;font-weight:700;color:'+(_lrTestePVal>=0?'#1D9E75':'#C0392B')+';">'+_lrTestePDisp+'</td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  el.innerHTML=h;
+}
+
+function precIn(el){el.value=el.value.replace(/[^0-9,.%]/g,'');}
+
+function precSave(el, n){
+  var tr=el.closest('tr');
+  var motor=tr?tr.getAttribute('data-motor'):'';
+  var fk=el.getAttribute('data-fk');
+  if(!motor||!fk)return;
+  // Save to correct storage
+  if(fk==='lucro'){
+    // Lucro goes to IMPOSTOS data
+    var d=lmImp();
+    if(!d[motor])d[motor]={};
+    d[motor][fk]=String(n);
+    smImp(d);
+  } else {
+    // Frete, com_cla, com_pre go to prec data
+    var d2=lmPrec();
+    if(!d2[motor])d2[motor]={};
+    d2[motor][fk]=String(n);
+    smPrec(d2);
+  }
+  // Update calculated cells in this row
+  precUpdateRow(tr, motor);
+}
+
+function precUpdateRow(tr, motor){
+  var precData=lmPrec();
+  var impData=lmImp();
+  var precosD=lmPrecos();
+  var row=precData[motor]||{};
+  var impRow=impData[motor]||{};
+  var precoCompra=parseFloat((precosD[motor]||{}).preco)||0;
+  var frete=parseFloat(row.frete)||0;
+  // Read from inputs in row (most current values)
+  var freteInp=tr.querySelector('[data-fk="frete"]');
+  if(freteInp)frete=parseUserInput(freteInp.value)||frete;
+  var comClaInp=tr.querySelector('[data-fk="com_cla"]');
+  var comPreInp=tr.querySelector('[data-fk="com_pre"]');
+  var lucroInp=tr.querySelector('[data-fk="lucro"]');
+  var comCla=comClaInp?parseUserInput(comClaInp.value)||12:parseFloat(row.com_cla)||12;
+  var comPre=comPreInp?parseUserInput(comPreInp.value)||17:parseFloat(row.com_pre)||17;
+  var lucro=lucroInp?parseUserInput(lucroInp.value)||0:parseFloat(impRow.lucro)||0;
+  // Get IMPOSTOS values
+  var dl=impRow.desc_lista!==undefined&&impRow.desc_lista!==''?parseFloat(impRow.desc_lista):15;
+  var di=impRow.desc_ipi!==undefined&&impRow.desc_ipi!==''?parseFloat(impRow.desc_ipi):1.05;
+  var icms=impRow.icms!==undefined&&impRow.icms!==''?parseFloat(impRow.icms):12;
+  var pis=impRow.pis_cof!==undefined&&impRow.pis_cof!==''?parseFloat(impRow.pis_cof):9.25;
+  var rev=impRow.revisao!==undefined&&impRow.revisao!==''?parseFloat(impRow.revisao):0;
+  // Calculate
+  var s1=precoCompra*(1-dl/100);
+  var s2=di>0?s1/di:s1;
+  var cf=s1-s2*(icms/100)-s1*(pis/100);
+  var deb=0.2953; var c=comCla/100;
+  var num=(lucro/100)*s1+(cf+rev)+frete*deb/(1-c);
+  var den=1-deb/(1-c);
+  var partida=den!==0&&lucro>0?num/den:precoCompra*1.20404;
+  var base=partida+frete;
+  var precoCla=base>0?Math.ceil(base/(1-comCla/100)*100)/100:0;
+  var precoPremi=base>0?Math.ceil(base/(1-comPre/100)*100)/100:0;
+  var fmtN=function(v){return v>0?v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'';};
+  // Update readonly cells — find by position after each input
+  // Preço de Partida = td after Motor and Preço de Compra (index 2)
+  // Preço Clássico = td after Comissão Clássico input
+  // Preço Premium = td after Comissão Premium input
+  var comClaCell=tr.querySelector('[data-fk="com_cla"]');
+  var comPreCell=tr.querySelector('[data-fk="com_pre"]');
+  var tds=tr.querySelectorAll('td');
+  // td[2] = Preço de Partida (always index 2)
+  if(tds[2])tds[2].textContent=fmtN(partida);
+  // Preço Clássico = next sibling td after com_cla td
+  if(comClaCell){
+    var comClaTd=comClaCell.closest('td');
+    var precoClatd=comClaTd?comClaTd.nextElementSibling:null;
+    if(precoClatd)precoClatd.textContent=fmtN(precoCla);
+  }
+  // Preço Premium = next sibling td after com_pre td
+  if(comPreCell){
+    var comPreTd=comPreCell.closest('td');
+    var precoPremiTd=comPreTd?comPreTd.nextElementSibling:null;
+    if(precoPremiTd)precoPremiTd.textContent=fmtN(precoPremi);
+  }
+  // Lucro Desejado R$ = next sibling td after lucro input
+  var lucroInp2=tr.querySelector('[data-fk="lucro"]');
+  if(lucroInp2){
+    var impData2=lmImp();
+    var impRow2=impData2[motor]||{};
+    var _dl3=impRow2.desc_lista!==undefined&&impRow2.desc_lista!==''?parseFloat(impRow2.desc_lista):15;
+    var _s1lr=precoCompra*(1-_dl3/100);
+    var lucroVal2=parseUserInput(lucroInp2.value)||0;
+    var lucroBRL2=lucroVal2>0?(lucroVal2/100)*_s1lr:0;
+    var lucroBRLtd=lucroInp2.closest('td').nextElementSibling;
+    if(lucroBRLtd)lucroBRLtd.textContent=fmtN(lucroBRL2);
+  }
+}
+
+function precBl(el){
+  if(!el.value)return;
+  var fmt=el.getAttribute('data-fmt');
+  var n=parseUserInput(el.value);
+  // Format display
+  if(fmt==='pct') el.value=n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';
+  else el.value=n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  precSave(el, n);
+}
+
+function precKD(e,el){
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+    arrowNav(e,el,'#prec-table');
+    return;
+  }
+  if(e.key!=='Enter')return;
+  e.preventDefault();
+  precBl(el);
+  // Move to same field next row
+  var fk=el.getAttribute('data-fk');
+  var rows=Array.from(document.querySelectorAll('#prec-table tbody tr'));
+  var tr=el.closest('tr');
+  var ni=(rows.indexOf(tr)+1)%rows.length;
+  var next=rows[ni].querySelector('[data-fk="'+fk+'"]');
+  if(next){
+    // Remove blur temporarily
+    var ob=el.onblur; el.onblur=null;
+    next.focus(); next.select();
+    setTimeout(function(){el.onblur=ob;},50);
+  }
+}
+
+function precLucroBl(el){
+  precBl(el);
+}
+</script>
+
+<script>
+// ── ABA IMPOSTOS LUCRO REAL ──────────────────────────────────
+
+var IMP_FIELDS=[
+  {k:'custo',      l:'Preço de\nCompra',      fmt:'brl_ro'},
+  {k:'desc_lista', l:'DESC Lista Fornecedor', fmt:'pct'},
+  {k:'desc_ipi',   l:'Desconto\nIPI',          fmt:'dec'},
+  {k:'icms',       l:'ICMS',                  fmt:'pct'},
+  {k:'pis_cof',    l:'PIS/\nCOFINS',            fmt:'pct'},
+  {k:'revisao',    l:'Revisão\nOficina',       fmt:'dec'},
+  {k:'_icms_pis',  l:'ICMS +\nPIS/COFINS',    fmt:'calc'},
+  {k:'_resultado', l:'Custo\nFinal',           fmt:'calc'},
+  {k:'lucro',      l:'Lucro\nDesejado',       fmt:'pct'},
+  {k:'_lucro_brl', l:'Lucro\nDesejado R$',    fmt:'calc'},
+];
+
+var IMP_ME_FIELDS=[
+  {k:'custo',      l:'Preço de\nCompra',      fmt:'brl_ro'},
+  {k:'desc_lista', l:'DESC Lista\nFornecedor', fmt:'pct'},
+  {k:'revisao',    l:'Revisão\nOficina',       fmt:'dec'},
+  {k:'_resultado',    l:'Custo\nFinal',              fmt:'calc'},
+  {k:'_imp_cla',    l:'Impostos\nUnificados\n12% Clássico',  fmt:'calc'},
+  {k:'_imp_pre',    l:'Impostos\nUnificados\n12% Premium',   fmt:'calc'},
+  {k:'lucro',         l:'Lucro\nDesejado',           fmt:'pct'},
+  {k:'_lucro_brl', l:'Lucro\nDesejado R$',     fmt:'calc'},
+];
+
+function lmImp(){if(_impCache)return _impCache;try{var r=localStorage.getItem('pnv3:imp');return r?JSON.parse(r):{}}catch(e){return {};}}
+var _impCache=null;
+function smImp(d){_impCache=d;try{localStorage.setItem('pnv3:imp',JSON.stringify(d));}catch(e){}}
+
+function impCalc(row,precData,motor){
+  var custo=0;
+  try{var pd=JSON.parse(localStorage.getItem('pnv3:precos')||'{}');if(pd[motor])custo=parseFloat(pd[motor].preco)||0;}catch(e){}
+  if(!custo)custo=parseFloat(row.custo)||0;
+  var dl=parseFloat(row.desc_lista)||0;
+  var di=parseFloat(row.desc_ipi)||1.05;
+  var icms=parseFloat(row.icms)||0;
+  var pis=parseFloat(row.pis_cof)||0;
+  var s1=custo*(1-dl/100);
+  var s2=di>0?s1/di:s1;
+  var iv=s2*(icms/100);
+  var pv=s1*(pis/100);
+  return {s1:s1,s2:s2,icms_val:iv,pis_val:pv,icms_pis:iv+pv,resultado:s1-iv-pv};
+}
+
+function renderImp(){
+  var el=document.getElementById('imp-table');
+  if(!el)return;
+  var data=lmImp();
+  var MOTORS2=typeof MOTORS!=='undefined'?MOTORS:[];
+  var precosD=typeof _precosCache!=='undefined'&&_precosCache?_precosCache:(function(){try{return JSON.parse(localStorage.getItem('pnv3:precos')||'{}')}catch(e){return {}}}());
+
+  var h='<table style="width:100%;border-collapse:separate;border-spacing:0;font-size:11px;table-layout:fixed;">';
+  h+='<colgroup>';
+  h+='<col style="width:110px"/>'; // Motor
+  var _impColWidths=[85,85,72,65,72,72,85,85,80,85];
+  _impColWidths.forEach(function(w){h+='<col style="width:'+w+'px"/>';});
+  h+='</colgroup>';
+  h+='<thead><tr>';
+  h+='<th style="background:#A93226;color:#fff;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;padding:6px 4px;border-radius:8px 0 0 0;height:48px;vertical-align:middle;">MOTOR</th>';
+  IMP_FIELDS.forEach(function(f,fi){
+    var br=fi===IMP_FIELDS.length-1?'border-radius:0 8px 0 0;':'';
+    h+='<th style="background:#A93226;color:#fff;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;padding:5px 2px;height:48px;vertical-align:middle;white-space:pre-line;line-height:1.3;'+br+'">'+f.l+'</th>';
+  });
+  h+='</tr></thead><tbody>';
+
+  MOTORS2.forEach(function(motor){
+    var row=data[motor]||{};
+    if(precosD[motor]&&precosD[motor].preco)row.custo=precosD[motor].preco;
+    if(!row.desc_lista)row.desc_lista='15';
+    if(!row.desc_ipi)row.desc_ipi='1.05';
+    if(!row.icms)row.icms='12';
+    if(!row.pis_cof)row.pis_cof='9.25';
+    if(!row.revisao)row.revisao='30';
+
+    var calc=impCalc(row,{},motor);
+    var td='padding:6px 3px;border-bottom:1px solid #e0e8f0;vertical-align:middle;height:36px;box-sizing:border-box;';
+    var inp='width:100%;box-sizing:border-box;text-align:center;font-size:11px;font-weight:600;padding:3px 1px;border:1px solid #e8c8c8;border-radius:4px;background:#fff5f5;color:var(--text);font-family:var(--font);';
+    var fmtN=function(v){return v>0?v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'-';};
+    var fmtP=function(v){return v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';};
+    var fmtD=function(v){return v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});};
+
+    h+='<tr data-motor="'+motor.replace(/"/g,'&quot;')+'">';
+    h+='<td style="'+td+'text-align:right;font-weight:700;white-space:normal;padding-right:6px;overflow:hidden;">'+motor+'</td>';
+
+    IMP_FIELDS.forEach(function(f){
+      if(f.fmt==='brl_ro'){
+        var cv=parseFloat(row.custo)||0;
+        h+='<td style="'+td+'text-align:center;font-weight:700;">'+(cv>0?fmtD(cv):'—')+'</td>';
+      } else if(f.fmt==='calc'){
+        var v=f.k==='_icms_pis'?calc.icms_pis:(f.k==='_lucro_brl'?(parseFloat(row.lucro)||0)/100*calc.s1:calc.resultado);
+        var clr=f.k==='_lucro_brl'?'#1D9E75':'#C0392B';
+        h+='<td style="'+td+'text-align:center;color:'+clr+';font-weight:700;">'+fmtN(v)+'</td>';
+      } else {
+        var v=row[f.k]||'';
+        var n=parseFloat(v)||0;
+        var disp=n?(f.fmt==='pct'?fmtP(n):fmtD(n)):'';
+        var ph=f.fmt==='pct'?'0,00%':'0,00';
+        h+='<td style="'+td+'"><input type="text" data-fk="'+f.k+'" data-fmt="'+f.fmt+'"';
+        h+=' value="'+disp+'" placeholder="'+ph+'"';
+        h+=' style="'+inp+'"';
+        h+=' oninput="impIn(this)" onblur="impBl(this)" onkeydown="impKD(event,this)" onfocus="this.select()"/></td>';
+      }
+    });
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  el.innerHTML=h;
+}
+
+function parseUserInput(v){
+  if(!v)return 0;
+  v=String(v).replace(/%/g,'').trim();
+  var hasDot=v.indexOf('.')!==-1,hasComma=v.indexOf(',')!==-1;
+  if(hasDot&&hasComma){v=v.replace(/\./g,'').replace(',','.');}
+  else if(hasComma){v=v.replace(',','.');}
+  return parseFloat(v)||0;
+}
+
+function impIn(el){el.value=el.value.replace(/[^0-9,.%]/g,'');}
+
+function impBl(el){
+  if(!el.value)return;
+  var fmt=el.getAttribute('data-fmt');
+  var n=parseUserInput(el.value);
+  if(fmt==='pct')el.value=n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';
+  else el.value=n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  var tr=el.closest('tr');
+  var motor=tr?tr.getAttribute('data-motor'):'';
+  if(motor){
+    var fk=el.getAttribute('data-fk');
+    var d=lmImp();if(!d[motor])d[motor]={};
+    d[motor][fk]=String(n);smImp(d);
+    impRefreshRow(tr,motor);
+    // Only refresh ML tab if it's not currently active (to avoid disrupting user)
+    if(typeof renderPrec==='function'){
+      var mlTab=document.getElementById('vw-prec');
+      if(mlTab&&mlTab.style.display==='none')renderPrec();
+    }
+  }
+}
+
+
+function arrowNav(e, el, tableSelector){
+  if(e.key!=='ArrowDown'&&e.key!=='ArrowUp')return;
+  e.preventDefault();
+  var rows=Array.from(document.querySelectorAll(tableSelector+' tbody tr'));
+  var tr=el.closest('tr');
+  var ri=rows.indexOf(tr);
+  var tds=Array.from(tr.querySelectorAll('td'));
+  var ci=tds.indexOf(el.closest('td'));
+  var dir=e.key==='ArrowDown'?1:-1;
+  var ni=(ri+dir+rows.length)%rows.length;
+  var ntd=rows[ni].querySelectorAll('td')[ci];
+  // Only move if target cell has an editable input
+  if(ntd){
+    var inp=ntd.querySelector('input:not([readonly]):not([disabled])');
+    if(inp){inp.focus();inp.select();}
+  }
+}
+function impKD(e,el){
+  arrowNav(e,el,'#imp-table');
+  if(e.key!=='Enter')return;
+  e.preventDefault();impBl(el);
+  var rows=Array.from(document.querySelectorAll('#imp-table tbody tr'));
+  var tr=el.closest('tr');
+  var ri=rows.indexOf(tr);
+  var tds=Array.from(tr.querySelectorAll('td'));
+  var ci=tds.indexOf(el.closest('td'));
+  var ntd=rows[(ri+1)%rows.length].querySelectorAll('td')[ci];
+  if(ntd){var inp=ntd.querySelector('input');if(inp){inp.focus();inp.select();}}
+}
+
+function impRefreshRow(tr,motor){
+  var get=function(fk){
+    var inp=tr.querySelector('[data-fk="'+fk+'"]');
+    return inp?parseUserInput(inp.value):0;
+  };
+  var custo=0;
+  try{var pd=JSON.parse(localStorage.getItem('pnv3:precos')||'{}');if(pd[motor])custo=parseFloat(pd[motor].preco)||0;}catch(e){}
+  var dl=get('desc_lista'),di=get('desc_ipi')||1.05,icms=get('icms'),pis=get('pis_cof');
+  var s1=custo*(1-dl/100),s2=di>0?s1/di:s1;
+  var iv=s2*(icms/100),pv=s1*(pis/100);
+  var fmtN=function(v){return v>0?v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'-';};
+  var allTds=tr.querySelectorAll('td');
+  // Find calc cells
+  var calcCells=[];
+  allTds.forEach(function(td){if(!td.querySelector('input')&&td.style.color)calcCells.push(td);});
+  if(calcCells[0])calcCells[0].textContent=fmtN(iv+pv);
+  if(calcCells[1])calcCells[1].textContent=fmtN(s1-iv-pv);
+  // Update Lucro Desejado R$ = (lucro%/100) * s1
+  if(calcCells[2]){
+    var lucroVal=get('lucro');
+    calcCells[2].textContent=lucroVal>0?fmtN((lucroVal/100)*s1):'-';
+  }
+}
+
+// ── ABA PREÇOS DE COMPRA DOS MOTORES ─────────────────────────
+
+function lmPrecos(){if(_precosCache)return _precosCache;try{var r=localStorage.getItem('pnv3:precos');return r?JSON.parse(r):{}}catch(e){return {};}}
+var _precosCache=null;
+function smPrecos(d){_precosCache=d;try{localStorage.setItem('pnv3:precos',JSON.stringify(d));}catch(e){}}
+
+function renderPrecos(){
+  var el=document.getElementById('precos-table');
+  if(!el)return;
+  var data=lmPrecos();
+  var MOTORS2=typeof MOTORS!=='undefined'?MOTORS:[];
+  var h='<table style="width:100%;border-collapse:separate;border-spacing:0;font-size:11px;table-layout:fixed;">';
+  h+='<colgroup><col style="width:160px"/><col style="width:200px"/></colgroup>';
+  h+='<thead><tr>';
+  h+='<th style="background:#1A7A4A;color:#fff;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;padding:6px 12px;border-radius:8px 0 0 0;height:44px;">MOTOR</th>';
+  h+='<th style="background:#1A7A4A;color:#fff;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;padding:6px 12px;border-radius:0 8px 0 0;height:48px;">Preço de Compra (R$)</th>';
+  h+='</tr></thead><tbody>';
+  MOTORS2.forEach(function(motor){
+    var row=data[motor]||{};
+    var v=row.preco?parseFloat(row.preco).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'';
+    h+='<tr data-motor="'+motor.replace(/"/g,'&quot;')+'">';
+    h+='<td style="padding:4px 8px;border-bottom:1px solid #e0e8f0;text-align:right;font-weight:700;white-space:nowrap;">'+motor+'</td>';
+    h+='<td style="padding:4px 8px;border-bottom:1px solid #e0e8f0;text-align:center;">';
+    h+='<input type="text" data-fk="preco" value="'+v+'" placeholder="0,00"';
+    h+=' style="width:100px;box-sizing:border-box;text-align:center;font-size:11px;font-weight:600;padding:3px 4px;border:1px solid #b8dfc8;border-radius:4px;background:#f5fff8;color:var(--text);font-family:var(--font);"';
+    h+=' oninput="precosIn(this)" onblur="precosBl(this)" onkeydown="precosKD(event,this)" onfocus="this.select()"/>';
+    h+='</td></tr>';
+  });
+  h+='</tbody></table>';
+  el.innerHTML=h;
+}
+
+function precosIn(el){el.value=el.value.replace(/[^0-9,.]/g,'');}
+
+function precosBl(el){
+  if(!el.value)return;
+  var n=parseUserInput(el.value);
+  el.value=n>0?n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'';
+  var tr=el.closest('tr');
+  var motor=tr?tr.getAttribute('data-motor'):'';
+  if(motor){
+    var d=lmPrecos();if(!d[motor])d[motor]={};
+    d[motor].preco=String(n);smPrecos(d);
+  }
+}
+
+function precosKD(e,el){
+  arrowNav(e,el,'#precos-table');
+  if(e.key!=='Enter')return;
+  e.preventDefault();precosBl(el);
+  var rows=Array.from(document.querySelectorAll('#precos-table tbody tr'));
+  var tr=el.closest('tr');
+  var ni=(rows.indexOf(tr)+1)%rows.length;
+  var inp=rows[ni].querySelector('input');
+  if(inp){inp.focus();inp.select();}
+}
+</script>
+
+<script>
+// ── ABA LUCRO REAL ME ─────────────────────────────────────────
+var _impMeCache=null;
+function lmImpMe(){if(_impMeCache)return _impMeCache;try{var r=localStorage.getItem('pnv3:imp_me');var d=r?JSON.parse(r):{};_impMeCache=d;return d;}catch(e){return {};}}
+function smImpMe(d){_impMeCache=d;try{localStorage.setItem('pnv3:imp_me',JSON.stringify(d));}catch(e){}}
+
+function renderImpMe(){
+  var el=document.getElementById('imp-me-table');
+  if(!el)return;
+  var data=lmImpMe();
+  var precosD=typeof _precosCache!=='undefined'&&_precosCache?_precosCache:(function(){try{return JSON.parse(localStorage.getItem('pnv3:precos')||'{}')}catch(e){return {}}}());
+  var MOTORS2=typeof MOTORS!=='undefined'?MOTORS:[];
+  var h='<table style="width:100%;border-collapse:separate;border-spacing:0;font-size:11px;table-layout:fixed;">';
+  h+='<colgroup><col style="width:120px"/>';
+  IMP_ME_FIELDS.forEach(function(){h+='<col style="width:86px"/>';});
+  h+='</colgroup>';
+  h+='<thead><tr>';
+  h+='<th style="background:#A93226;color:#fff;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;padding:6px 4px;border-radius:8px 0 0 0;height:48px;vertical-align:middle;white-space:pre-line;">MOTOR</th>';
+  IMP_ME_FIELDS.forEach(function(f,fi){
+    var br=fi===IMP_ME_FIELDS.length-1?'border-radius:0 8px 0 0;':'';
+    h+='<th style="background:#A93226;color:#fff;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;padding:5px 2px;height:48px;vertical-align:middle;white-space:pre-line;line-height:1.3;'+br+'">'+f.l+'</th>';
+  });
+  h+='</tr></thead><tbody>';
+  MOTORS2.forEach(function(motor){
+    var row=data[motor]||{};
+    if(precosD[motor]&&precosD[motor].preco)row.custo=precosD[motor].preco;
+    if(!row.desc_lista)row.desc_lista='15';
+    if(!row.revisao)row.revisao='30';
+    var custo=parseFloat(row.custo)||0;
+    var dl=parseFloat(row.desc_lista)||0;
+    var s1=custo*(1-dl/100);
+    var rev=parseFloat(row.revisao)||0;
+    var custoFinal=s1+rev;
+    var lucroVal=parseFloat(row.lucro)||0;
+    var lucroBRL=lucroVal>0?(lucroVal/100)*custoFinal:0;
+    var td='padding:6px 3px;border-bottom:1px solid #e0e8f0;vertical-align:middle;height:36px;box-sizing:border-box;';
+    var inp='width:100%;box-sizing:border-box;text-align:center;font-size:11px;font-weight:600;padding:3px 1px;border:1px solid #e8c8c8;border-radius:4px;background:#fff5f5;color:var(--text);font-family:var(--font);';
+    var fmtN=function(v){return v>0?v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'-';};
+    var fmtP=function(v){return v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';};
+    var fmtD=function(v){return v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});};
+    h+='<tr data-motor="'+motor.replace(/"/g,'&quot;')+'">';
+    h+='<td style="'+td+'text-align:right;font-weight:700;white-space:normal;padding-right:6px;overflow:hidden;">'+motor+'</td>';
+    IMP_ME_FIELDS.forEach(function(f){
+      if(f.fmt==='brl_ro'){
+        var cv=parseFloat(row.custo)||0;
+        h+='<td style="'+td+'text-align:center;font-weight:700;">'+(cv>0?fmtD(cv):'—')+'</td>';
+      } else if(f.fmt==='calc'){
+        // Get preco cla/pre from ML ME data for this motor
+        var _precMeD=lmPrecMe(),_precMeRow=_precMeD[motor]||{};
+        var _freteME=parseFloat(_precMeRow.frete)||0;
+        var _comClaME=parseFloat(_precMeRow.com_cla)||12;
+        var _comPreME=parseFloat(_precMeRow.com_pre)||17;
+        var _baseME=(lucroVal>0&&lucroVal<100?custoFinal/(1-lucroVal/100):custo)+_freteME;
+        var _precoClaMe=_baseME>0?Math.ceil(_baseME/(1-_comClaME/100)*100)/100:0;
+        var _precoPreMe=_baseME>0?Math.ceil(_baseME/(1-_comPreME/100)*100)/100:0;
+        var v=f.k==='_resultado'?custoFinal:(f.k==='_imp_cla'?_precoClaMe*(12/88):(f.k==='_imp_pre'?_precoPreMe*(12/88):lucroBRL));
+        var clr=f.k==='_lucro_brl'?'#1D9E75':'#C0392B';
+        h+='<td style="'+td+'text-align:center;color:'+clr+';font-weight:700;">'+fmtN(v)+'</td>';
+      } else {
+        var v=row[f.k]||'';var n=parseFloat(v)||0;
+        var disp=n?(f.fmt==='pct'?fmtP(n):fmtD(n)):'';
+        var ph=f.fmt==='pct'?'0,00%':'0,00';
+        h+='<td style="'+td+'"><input type="text" data-fk="'+f.k+'" data-fmt="'+f.fmt+'" value="'+disp+'" placeholder="'+ph+'" style="'+inp+'" oninput="impMeIn(this)" onblur="impMeBl(this)" onkeydown="impMeKD(event,this)" onfocus="this.select()"/></td>';
+      }
+    });
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  el.innerHTML=h;
+}
+
+function impMeIn(el){el.value=el.value.replace(/[^0-9,.%]/g,'');}
+function impMeBl(el){
+  if(!el.value)return;
+  var fmt=el.getAttribute('data-fmt'),n=parseUserInput(el.value);
+  if(fmt==='pct')el.value=n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';
+  else el.value=n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  var tr=el.closest('tr'),motor=tr?tr.getAttribute('data-motor'):'';
+  if(motor){
+    var fk=el.getAttribute('data-fk'),d=lmImpMe();
+    if(!d[motor])d[motor]={};d[motor][fk]=String(n);smImpMe(d);
+    impMeRefreshRow(tr,motor);
+    if(typeof renderPrecMe==='function')renderPrecMe();
+  }
+}
+function impMeKD(e,el){
+  if(e.key!=='Enter')return;e.preventDefault();impMeBl(el);
+  var rows=Array.from(document.querySelectorAll('#imp-me-table tbody tr'));
+  var tr=el.closest('tr'),ri=rows.indexOf(tr);
+  var tds=Array.from(tr.querySelectorAll('td')),ci=tds.indexOf(el.closest('td'));
+  var ntd=rows[(ri+1)%rows.length].querySelectorAll('td')[ci];
+  if(ntd){var i2=ntd.querySelector('input');if(i2){i2.focus();i2.select();}}
+}
+function impMeRefreshRow(tr,motor){
+  var get=function(fk){var i2=tr.querySelector('[data-fk="'+fk+'"]');return i2?parseUserInput(i2.value):0;};
+  var custo=0;
+  try{var pd=typeof _precosCache!=='undefined'&&_precosCache?_precosCache:JSON.parse(localStorage.getItem('pnv3:precos')||'{}');if(pd[motor])custo=parseFloat(pd[motor].preco)||0;}catch(e){}
+  var dl=get('desc_lista'),rev=get('revisao'),lucro=get('lucro');
+  var s1=custo*(1-dl/100);
+  var custoFinal=s1+rev;
+  var lucroBRL=lucro>0?(lucro/100)*custoFinal:0;
+  // Recalculate ML ME prices
+  var _precMeD=lmPrecMe(),_precMeR=_precMeD[motor]||{};
+  var _frete=parseFloat(_precMeR.frete)||0;
+  var _comCla=parseFloat(_precMeR.com_cla)||12;
+  var _comPre=parseFloat(_precMeR.com_pre)||17;
+  var _partida=lucro>0&&lucro<100&&custoFinal>0?custoFinal/(1-lucro/100):0;
+  var _base=_partida+_frete;
+  var _precoCla=_base>0?Math.ceil(_base/(1-_comCla/100)*100)/100:0;
+  var _precoPre=_base>0?Math.ceil(_base/(1-_comPre/100)*100)/100:0;
+  var fmtN=function(v){return v>0?v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'-';};
+  var tds=tr.querySelectorAll('td');
+  if(tds[4])tds[4].textContent=fmtN(custoFinal);
+  if(tds[5])tds[5].textContent=fmtN(_precoCla*(12/88));
+  if(tds[6])tds[6].textContent=fmtN(_precoPre*(12/88));
+  if(tds[8])tds[8].textContent=fmtN(lucroBRL);
+}
+
+// ── ABA ML ME ─────────────────────────────────────────────────
+var _precMeCache=null;
+function lmPrecMe(){if(_precMeCache)return _precMeCache;try{var r=localStorage.getItem('pnv3:prec_me');var d=r?JSON.parse(r):{};_precMeCache=d;return d;}catch(e){return {};}}
+function smPrecMe(d){_precMeCache=d;try{localStorage.setItem('pnv3:prec_me',JSON.stringify(d));}catch(e){}}
+
+function renderPrecMe(){
+  var el=document.getElementById('prec-me-table');if(!el)return;
+  var data=lmPrecMe();
+  var MOTORS2=typeof MOTORS!=='undefined'?MOTORS:[];
+  var precosD=typeof _precosCache!=='undefined'&&_precosCache?_precosCache:(function(){try{return JSON.parse(localStorage.getItem('pnv3:precos')||'{}')}catch(e){return {}}}());
+  var h='<table style="width:100%;border-collapse:separate;border-spacing:0;font-size:11px;table-layout:fixed;">';
+  h+='<thead><tr>';
+  var thS='background:#FFD600;color:#333;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;padding:5px 3px;height:48px;vertical-align:middle;white-space:pre-line;line-height:1.3;';
+  h+='<th style="'+thS+'border-radius:8px 0 0 0;">Motor</th>';
+  ['Preço de\nCompra','Preço de\nPartida','Frete','Comissão\nClássico','Preço\nClássico','Comissão\nPremium','Preço\nPremium','Lucro\nDesejado','Lucro\nDesejado R$','','Preço Teste\nClássico R$','Lucro Teste\nClássico %','Preço Teste\nPremium R$','Lucro Teste\nPremium %'].forEach(function(l,i){
+    var br=i===13?'border-radius:0 8px 0 0;':'';
+    var sep=i===9?'':'';
+    h+=(l===''?'<th style="background:#D35400;width:4px;padding:0;"></th>':'<th style="'+thS+br+sep+'">'+l+'</th>');
+  });
+  h+='</tr></thead><tbody>';
+  MOTORS2.forEach(function(motor){
+    var row=data[motor]||{};
+    if(!row.com_cla)row.com_cla='12';if(!row.com_pre)row.com_pre='17';if(!row.frete)row.frete='0';
+    var precoCompra=parseFloat((precosD[motor]||{}).preco)||0;
+    var frete=parseFloat(row.frete)||0;
+    var precoPartida=0,precoCla=0,precoPremi=0;
+    try{
+      var imd=lmImpMe(),imr=imd[motor]||{};
+      var _lu=parseFloat(imr.lucro)||0;
+      var _dl=imr.desc_lista!==undefined&&imr.desc_lista!==''?parseFloat(imr.desc_lista):15;
+      var _rv=imr.revisao!==undefined&&imr.revisao!==''?parseFloat(imr.revisao):0;
+      var _s1=precoCompra*(1-_dl/100);
+      var _custoFinal=_s1+_rv;
+      precoPartida=_custoFinal;
+      var comCla=parseFloat(row.com_cla)||12,comPre=parseFloat(row.com_pre)||17;
+      var _base=_custoFinal*(1+_lu/100)+frete;
+      precoCla=_base>0?Math.ceil(_base/(1-0.12-comCla/100)*100)/100:0;
+      precoPremi=_base>0?Math.ceil(_base/(1-0.12-comPre/100)*100)/100:0;
+    }catch(e){}
+    if(!precoPartida)precoPartida=precoCompra;
+    var comCla=parseFloat(row.com_cla)||12,comPre=parseFloat(row.com_pre)||17;
+    var impMeR=lmImpMe()[motor]||{};
+    var lucroVal=parseFloat(impMeR.lucro)||0;
+    var _dl2=impMeR.desc_lista!==undefined&&impMeR.desc_lista!==''?parseFloat(impMeR.desc_lista):15;
+    var _rv2=impMeR.revisao!==undefined&&impMeR.revisao!==''?parseFloat(impMeR.revisao):0;
+    var _s1ml=precoCompra*(1-_dl2/100);
+    var _custoFinalMe=_s1ml+_rv2;
+    var lucroBRL=lucroVal>0?(lucroVal/100)*_custoFinalMe:0;
+    var fmtN=function(n){return n>0?n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'';};
+    var fmtP=function(n){return n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';};
+    var td='padding:6px 4px;border-bottom:1px solid #e8d800;vertical-align:middle;height:36px;box-sizing:border-box;';
+    var inpS='width:100%;box-sizing:border-box;text-align:center;font-size:11px;font-weight:600;padding:3px 2px;border:1px solid #e0c800;border-radius:4px;background:#fffff0;color:#333;font-family:var(--font);';
+    var grn='text-align:center;font-weight:700;color:#1D9E75;';
+    h+='<tr data-motor="'+motor.replace(/"/g,'&quot;')+'">';
+    h+='<td style="'+td+'text-align:right;font-weight:700;white-space:nowrap;">'+motor+'</td>';
+    h+='<td style="'+td+'text-align:center;font-weight:700;">'+fmtN(precoCompra)+'</td>';
+    h+='<td style="'+td+'text-align:center;font-weight:700;">'+fmtN(precoPartida)+'</td>';
+    h+='<td style="'+td+'"><input type="text" data-fk="frete" data-fmt="brl" value="'+fmtN(parseFloat(row.frete)||0)+'" style="'+inpS+'" oninput="precMeIn(this)" onblur="precMeBl(this)" onkeydown="precMeKD(event,this)" onfocus="this.select()"/></td>';
+    h+='<td style="'+td+'"><input type="text" data-fk="com_cla" data-fmt="pct" value="'+fmtP(comCla)+'" style="'+inpS+'" oninput="precMeIn(this)" onblur="precMeBl(this)" onkeydown="precMeKD(event,this)" onfocus="this.select()"/></td>';
+    h+='<td style="'+td+grn+'">'+fmtN(precoCla)+'</td>';
+    h+='<td style="'+td+'"><input type="text" data-fk="com_pre" data-fmt="pct" value="'+fmtP(comPre)+'" style="'+inpS+'" oninput="precMeIn(this)" onblur="precMeBl(this)" onkeydown="precMeKD(event,this)" onfocus="this.select()"/></td>';
+    h+='<td style="'+td+grn+'">'+fmtN(precoPremi)+'</td>';
+    h+='<td style="'+td+'"><input type="text" data-fk="lucro" data-fmt="pct" value="'+(lucroVal>0?fmtP(lucroVal):'')+'" style="'+inpS+'" oninput="precMeIn(this)" onblur="precMeLucroBl(this)" onkeydown="precMeKD(event,this)" onfocus="this.select()"/></td>';
+    h+='<td style="'+td+grn+'">'+fmtN(lucroBRL)+'</td>';
+    h+='<td style="background:#D35400;padding:0;width:4px;"></td>';
+    // Preço Teste ME (editável, salvo)
+    var _pvTestMe=parseFloat((lmPrecMe()[motor]||{}).pv_teste_me)||0;
+    var _pvTestMeDisp=_pvTestMe>0?_pvTestMe.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'';
+    h+='<td style="'+td+'"><input type="text" data-fk="pv_teste_me" data-fmt="brl" value="'+_pvTestMeDisp+'" placeholder="0,00" style="'+inpS+'background:#fffbe6;" oninput="precTesteIn(this,&quot;me&quot;)" onblur="precTesteCalc(this,&quot;me&quot;)" onkeydown="precTesteKD(event,this,&quot;me&quot;)" onfocus="this.select()"/></td>';
+    var _meTesteVal=parseFloat((lmPrecMe()[motor]||{}).lucro_teste_me)||0;
+    var _meTesteDisp=_meTesteVal!==0?_meTesteVal.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%':'';
+    var _meTesteColor=_meTesteVal>=0?'#1D9E75':'#C0392B';
+    h+='<td style="'+td+'text-align:center;font-weight:700;color:'+_meTesteColor+';">'+_meTesteDisp+'</td>';
+    // Preço Teste Premium (ME)
+    var _pvTestMeP=parseFloat((lmPrecMe()[motor]||{}).pv_teste_me_p)||0;
+    var _pvTestMePDisp=_pvTestMeP>0?_pvTestMeP.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'';
+    h+='<td style="'+td+'"><input type="text" data-fk="pv_teste_me_p" data-fmt="brl" value="'+_pvTestMePDisp+'" placeholder="0,00" style="'+inpS+'background:#fffbe6;" oninput="precTesteIn(this,&quot;me_pre&quot;)" onblur="precTesteCalc(this,&quot;me_pre&quot;)" onkeydown="precTesteKD(event,this,&quot;me_pre&quot;)" onfocus="this.select()"/></td>';
+    var _meTestePVal=parseFloat((lmPrecMe()[motor]||{}).lucro_teste_me_p)||0;
+    var _meTestePDisp=_meTestePVal!==0?_meTestePVal.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%':'';
+    h+='<td style="'+td+'text-align:center;font-weight:700;color:'+(_meTestePVal>=0?'#1D9E75':'#C0392B')+';">'+_meTestePDisp+'</td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  el.innerHTML=h;
+}
+
+function precMeIn(el){el.value=el.value.replace(/[^0-9,.%]/g,'');}
+function precMeBl(el){
+  if(!el.value)return;
+  var fmt=el.getAttribute('data-fmt'),n=parseUserInput(el.value);
+  if(fmt==='pct')el.value=n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';
+  else el.value=n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  var tr=el.closest('tr'),motor=tr?tr.getAttribute('data-motor'):'',fk=el.getAttribute('data-fk');
+  if(!motor||!fk)return;
+  if(fk==='lucro'){
+    var d=lmImpMe();if(!d[motor])d[motor]={};d[motor][fk]=String(n);smImpMe(d);
+    if(typeof renderImpMe==='function'){var impMeEl=document.getElementById('imp-me-table');if(impMeEl&&impMeEl.children.length>0)renderImpMe();}
+  } else{var d2=lmPrecMe();if(!d2[motor])d2[motor]={};d2[motor][fk]=String(n);smPrecMe(d2);}
+  precMeUpdateRow(tr,motor);
+}
+function precMeLucroBl(el){precMeBl(el);}
+function precMeUpdateRow(tr,motor){
+  var precData=lmPrecMe(),impData=lmImpMe();
+  var precosD=typeof _precosCache!=='undefined'&&_precosCache?_precosCache:(function(){try{return JSON.parse(localStorage.getItem('pnv3:precos')||'{}')}catch(e){return {}}}());
+  var row=precData[motor]||{},impRow=impData[motor]||{};
+  var precoCompra=parseFloat((precosD[motor]||{}).preco)||0;
+  var freteInp=tr.querySelector('[data-fk="frete"]');
+  var frete=freteInp?parseUserInput(freteInp.value)||0:parseFloat(row.frete)||0;
+  var comClaInp=tr.querySelector('[data-fk="com_cla"]'),comPreInp=tr.querySelector('[data-fk="com_pre"]');
+  var comCla=comClaInp?parseUserInput(comClaInp.value)||12:parseFloat(row.com_cla)||12;
+  var comPre=comPreInp?parseUserInput(comPreInp.value)||17:parseFloat(row.com_pre)||17;
+  var dl=impRow.desc_lista!==undefined&&impRow.desc_lista!==''?parseFloat(impRow.desc_lista):15;
+  var di=impRow.desc_ipi!==undefined&&impRow.desc_ipi!==''?parseFloat(impRow.desc_ipi):1.05;
+  var icms=impRow.icms!==undefined&&impRow.icms!==''?parseFloat(impRow.icms):12;
+  var pis=impRow.pis_cof!==undefined&&impRow.pis_cof!==''?parseFloat(impRow.pis_cof):9.25;
+  var rev=impRow.revisao!==undefined&&impRow.revisao!==''?parseFloat(impRow.revisao):0;
+  var lucro=parseFloat(impRow.lucro)||0;
+  var s1=precoCompra*(1-dl/100),s2=di>0?s1/di:s1,cf=s1-s2*(icms/100)-s1*(pis/100);
+  var s1me=precoCompra*(1-dl/100);
+  var custoFinalMe=s1me+rev;
+  var _baseME=custoFinalMe*(1+lucro/100)+frete;
+  var precoCla=_baseME>0?Math.ceil(_baseME/(1-0.12-comCla/100)*100)/100:0;
+  var precoPremi=_baseME>0?Math.ceil(_baseME/(1-0.12-comPre/100)*100)/100:0;
+  var partida=custoFinalMe;
+  var _dl2=impRow.desc_lista!==undefined&&impRow.desc_lista!==''?parseFloat(impRow.desc_lista):15;
+  var _rv2=impRow.revisao!==undefined&&impRow.revisao!==''?parseFloat(impRow.revisao):0;
+  var _s1ml=precoCompra*(1-_dl2/100);
+  var _custoFinalMe2=_s1ml+_rv2;
+  var lucroBRL=lucro>0?(lucro/100)*_custoFinalMe2:0;
+  var fmtN=function(v){return v>0?v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'';};
+  var tds=tr.querySelectorAll('td');
+  if(tds[2])tds[2].textContent=fmtN(partida);
+  var comClaCell=tr.querySelector('[data-fk="com_cla"]'),comPreCell=tr.querySelector('[data-fk="com_pre"]');
+  if(comClaCell){var t=comClaCell.closest('td').nextElementSibling;if(t)t.textContent=fmtN(precoCla);}
+  if(comPreCell){var t2=comPreCell.closest('td').nextElementSibling;if(t2)t2.textContent=fmtN(precoPremi);}
+  var lucroCell=tr.querySelector('[data-fk="lucro"]');
+  if(lucroCell){var lt=lucroCell.closest('td').nextElementSibling;if(lt)lt.textContent=fmtN(lucroBRL);}
+}
+function precMeKD(e,el){
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){arrowNav(e,el,'#prec-me-table');return;}
+  if(e.key!=='Enter')return;e.preventDefault();precMeBl(el);
+  var fk=el.getAttribute('data-fk');
+  var rows=Array.from(document.querySelectorAll('#prec-me-table tbody tr'));
+  var tr=el.closest('tr'),ni=(rows.indexOf(tr)+1)%rows.length;
+  var next=rows[ni].querySelector('[data-fk="'+fk+'"]');
+  if(next){var ob=el.onblur;el.onblur=null;next.focus();next.select();setTimeout(function(){el.onblur=ob;},50);}
+}
+</script>
+
+<div id="imp-me-regras-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;overflow-y:auto;">
+  <div style="background:#fff;border-radius:12px;max-width:680px;margin:40px auto;padding:28px 32px;position:relative;">
+    <button onclick="document.getElementById('imp-me-regras-modal').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:#888;">✕</button>
+    <h2 style="font-size:16px;font-weight:700;color:#C0392B;margin:0 0 4px;">📋 Regras de Cálculo — Micro Empresa</h2>
+    <p style="font-size:12px;color:#888;margin:0 0 20px;">Como os preços são formados na tabela de Impostos Micro Empresa</p>
+
+    <div style="display:flex;flex-direction:column;gap:14px;font-size:13px;color:#333;line-height:1.6;">
+
+      <p>💰 <strong>Passo 1 — Preço de Compra</strong><br>
+      Parta do Preço de Compra do motor conforme cadastrado na aba Preços Motores.<br>
+      Ex.: <strong>R$ 10.000,00</strong></p>
+
+      <p>🏷️ <strong>Passo 2 — Desconto Lista Fornecedor</strong><br>
+      Aplique o percentual de desconto negociado com o fornecedor sobre o Preço de Compra.<br>
+      Ex.: R$ 10.000,00 × (1 − 15%) = <strong>R$ 8.500,00</strong></p>
+
+      <p>🔧 <strong>Passo 3 — Mão de obra da Revisão</strong><br>
+      Adicione o valor da revisão do motor ao resultado do Passo 2. Este valor varia conforme o modelo — cada motor tem sua própria complexidade de manutenção.<br>
+      Ex.: R$ 8.500,00 + R$ 50,00 = <strong>R$ 8.550,00 (Custo Final)</strong></p>
+
+      <p>📊 <strong>Passo 4 — Imposto Unificado de 12%</strong><br>
+      Na Micro Empresa, há um imposto unificado de 12% que incide sobre o valor final de venda — inclusive sobre os encargos do canal (comissão do Mercado Livre, frete, taxa da Shopee etc.). Isso significa que o imposto já está embutido no preço final cobrado ao comprador.</p>
+
+      <p>🛒 <strong>Passo 5 — Formação do Preço Final e Apuração do Lucro</strong><br>
+      A partir do preço final de venda, deduz-se:<br>
+      &nbsp;&nbsp;• Os 12% de imposto unificado<br>
+      &nbsp;&nbsp;• A comissão do canal de venda (ex.: 12% Clássico ou 17% Premium no Mercado Livre)<br>
+      &nbsp;&nbsp;• O frete ou taxa do canal (se houver)<br><br>
+      A diferença entre o valor que sobrar após todas essas deduções e o <strong>Custo Final</strong> (Passo 3) representa o <strong>lucro da operação</strong>.</p>
+
+      <p><strong style="color:#C0392B;text-decoration:underline;">⚠️ ESTE PREÇO PODERÁ SER ALTERADO, MAS SOMENTE SOB SUPERVISÃO DO WELLINGTON.</strong></p>
+
+    </div>
+  </div>
+</div>
+<script>
+function exportTudo(){
+  var all={};
+  // Vendas (todos os meses)
+  for(var i=1;i<=12;i++){
+    try{var v=localStorage.getItem('pnv3:'+i);if(v)all['pnv3:'+i]=JSON.parse(v);}catch(e){}
+  }
+  // Configurações
+  ['pnv3:precos','pnv3:imp','pnv3:prec','pnv3:imp_me','pnv3:prec_me'].forEach(function(k){
+    try{var v=localStorage.getItem(k);if(v)all[k]=JSON.parse(v);}catch(e){}
+  });
+  var blob=new Blob([JSON.stringify(all,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='app_motores_backup_completo_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+}
+
+function importTudo(input){
+  var file=input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var all=JSON.parse(e.target.result);
+      var count=0;
+      Object.keys(all).forEach(function(k){
+        try{localStorage.setItem(k,JSON.stringify(all[k]));count++;}catch(err){}
+      });
+      // Clear caches
+      _impCache=null;_precCache=null;_precosCache=null;_regCache=null;
+      if(typeof _impMeCache!=='undefined')_impMeCache=null;
+      if(typeof _precMeCache!=='undefined')_precMeCache=null;
+      alert('✅ Importação concluída! '+count+' conjuntos de dados restaurados.');
+      location.reload();
+    }catch(err){alert('❌ Erro ao importar: '+err.message);}
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+</script>
+<script>
+function precTesteIn(el, mode) {
+  el.value = el.value.replace(/[^0-9,.]/g, '');
+}
+
+function precTesteKD(e, el, mode) {
+  if(e.key !== 'Enter') return;
+  e.preventDefault();
+  precTesteCalc(el, mode);
+  var tableId = (mode==='lr'||mode==='lr_pre') ? '#prec-table' : '#prec-me-table';
+  var fk = el.getAttribute('data-fk');
+  var rows = Array.from(document.querySelectorAll(tableId+' tbody tr'));
+  var tr = el.closest('tr');
+  var ni = (rows.indexOf(tr)+1) % rows.length;
+  var next = rows[ni].querySelector('[data-fk="'+fk+'"]');
+  if(next){ var ob=el.onblur; el.onblur=null; next.focus(); next.select(); setTimeout(function(){el.onblur=ob;},50); }
+}
+
+function precTesteCalc(el, mode) {
+  var n = parseUserInput(el.value);
+  if (!n) { el.value = ''; var td = el.closest('td'); if(td && td.nextElementSibling) td.nextElementSibling.textContent = ''; return; }
+  el.value = n.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  var tr = el.closest('tr');
+  var motor = tr ? tr.getAttribute('data-motor') : '';
+  if (!motor) return;
+
+  var precosD = typeof _precosCache!=='undefined'&&_precosCache ? _precosCache : (function(){try{return JSON.parse(localStorage.getItem('pnv3:precos')||'{}');}catch(e){return {};}})();
+  var precoCompra = parseFloat((precosD[motor]||{}).preco) || 0;
+  var freteInp = tr.querySelector('[data-fk="frete"]');
+  var comClaInp = tr.querySelector('[data-fk="com_cla"]');
+  var frete = freteInp ? parseUserInput(freteInp.value)||0 : 0;
+  var comCla = comClaInp ? parseUserInput(comClaInp.value)||12 : 12;
+
+  var lucroPct = 0;
+
+  if (mode === 'lr') {
+    // ML LUCRO REAL formula — reverse of: pvCla = ceil((partida+frete)/(1-com))
+    var impD = lmImp(); var impRow = impD[motor]||{};
+    var dl = impRow.desc_lista!==undefined&&impRow.desc_lista!==''?parseFloat(impRow.desc_lista):15;
+    var di = impRow.desc_ipi!==undefined&&impRow.desc_ipi!==''?parseFloat(impRow.desc_ipi):1.05;
+    var ic = impRow.icms!==undefined&&impRow.icms!==''?parseFloat(impRow.icms):12;
+    var pi = impRow.pis_cof!==undefined&&impRow.pis_cof!==''?parseFloat(impRow.pis_cof):9.25;
+    var rv = impRow.revisao!==undefined&&impRow.revisao!==''?parseFloat(impRow.revisao):0;
+    var s1 = precoCompra*(1-dl/100);
+    var s2 = di>0?s1/di:s1;
+    var cf = s1 - s2*(ic/100) - s1*(pi/100) + rv;
+    var deb = 0.2953; var cc = comCla/100;
+    var partida = n*(1-comCla/100) - frete;
+    var lucroNum = partida*(1-deb/(1-cc)) - cf - frete*deb/(1-cc);
+    lucroPct = s1 > 0 ? lucroNum/s1*100 : 0;
+  } else if (mode === 'lr_pre') {
+    // ML LUCRO REAL Premium reverse
+    // precoPartida uses comCLA in deb formula, pvPre uses comPRE in denominator
+    var impD2 = lmImp(); var impRow2 = impD2[motor]||{};
+    var dl2p = impRow2.desc_lista!==undefined&&impRow2.desc_lista!==''?parseFloat(impRow2.desc_lista):15;
+    var di2p = impRow2.desc_ipi!==undefined&&impRow2.desc_ipi!==''?parseFloat(impRow2.desc_ipi):1.05;
+    var ic2p = impRow2.icms!==undefined&&impRow2.icms!==''?parseFloat(impRow2.icms):12;
+    var pi2p = impRow2.pis_cof!==undefined&&impRow2.pis_cof!==''?parseFloat(impRow2.pis_cof):9.25;
+    var rv2p = impRow2.revisao!==undefined&&impRow2.revisao!==''?parseFloat(impRow2.revisao):0;
+    var s1p = precoCompra*(1-dl2p/100);
+    var s2p = di2p>0?s1p/di2p:s1p;
+    var cfp = s1p-s2p*(ic2p/100)-s1p*(pi2p/100)+rv2p;
+    var comPreInp2 = tr.querySelector('[data-fk="com_pre"]');
+    var comPre2 = comPreInp2 ? parseUserInput(comPreInp2.value)||17 : 17;
+    var deb2=0.2953; var cc2=comCla/100; // uses comCLA in deb, not comPRE
+    var partida2 = n*(1-comPre2/100) - frete;
+    var lucroNum2 = partida2*(1-deb2/(1-cc2))-cfp-frete*deb2/(1-cc2);
+    lucroPct = s1p > 0 ? lucroNum2/s1p*100 : 0;
+  } else if (mode === 'me_pre') {
+    // ML MICRO EMPRESA Premium formula
+    var impMeD2 = lmImpMe(); var imr2 = impMeD2[motor]||{};
+    var dl2m = imr2.desc_lista!==undefined&&imr2.desc_lista!==''?parseFloat(imr2.desc_lista):15;
+    var rv2m = imr2.revisao!==undefined&&imr2.revisao!==''?parseFloat(imr2.revisao):0;
+    var s1mep = precoCompra*(1-dl2m/100);
+    var custoFinalP = s1mep + rv2m;
+    var comPreInp3 = tr.querySelector('[data-fk="com_pre"]');
+    var comPre3 = comPreInp3 ? parseUserInput(comPreInp3.value)||17 : 17;
+    var sobraP = n*(1-0.12-comPre3/100) - frete;
+    var lucroRP = sobraP - custoFinalP;
+    lucroPct = custoFinalP > 0 ? lucroRP/custoFinalP*100 : 0;
+  } else {
+    // ML MICRO EMPRESA Clássico formula
+    var impMeD = lmImpMe(); var imr = impMeD[motor]||{};
+    var dl2 = imr.desc_lista!==undefined&&imr.desc_lista!==''?parseFloat(imr.desc_lista):15;
+    var rv2 = imr.revisao!==undefined&&imr.revisao!==''?parseFloat(imr.revisao):0;
+    var s1me = precoCompra*(1-dl2/100);
+    var custoFinal = s1me + rv2;
+    var sobra2 = n*(1-0.12-comCla/100) - frete;
+    var lucroR = sobra2 - custoFinal;
+    lucroPct = custoFinal > 0 ? lucroR/custoFinal*100 : 0;
+  }
+
+  var resultTd = el.closest('td').nextElementSibling;
+  if (resultTd) {
+    resultTd.textContent = lucroPct !== 0 ? lucroPct.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%' : '';
+    resultTd.style.color = lucroPct >= 0 ? '#1D9E75' : '#C0392B';
+  }
+  // Save teste value AND lucro% to storage
+  var _lucroPctStr = lucroPct !== 0 ? String(lucroPct) : '';
+  if (mode === 'lr') {
+    var d = lmPrec(); if(!d[motor])d[motor]={}; d[motor].pv_teste=String(n); d[motor].lucro_teste=_lucroPctStr; smPrec(d);
+  } else if (mode === 'lr_pre') {
+    var d = lmPrec(); if(!d[motor])d[motor]={}; d[motor].pv_teste_p=String(n); d[motor].lucro_teste_p=_lucroPctStr; smPrec(d);
+  } else if (mode === 'me_pre') {
+    var d2 = lmPrecMe(); if(!d2[motor])d2[motor]={}; d2[motor].pv_teste_me_p=String(n); d2[motor].lucro_teste_me_p=_lucroPctStr; smPrecMe(d2);
+  } else {
+    var d2 = lmPrecMe(); if(!d2[motor])d2[motor]={}; d2[motor].pv_teste_me=String(n); d2[motor].lucro_teste_me=_lucroPctStr; smPrecMe(d2);
+  }
+}
+</script>
+<script>
+function clonarVenda(mo, day, idx) {
+  var d = lm(mo);
+  if(!d[day]||!d[day][idx])return;
+  var src = JSON.parse(JSON.stringify(d[day][idx]));
+  // Reset entrega
+  src.data_entrega = 'NAO_ENTREGOU';
+  // Find next available idx in same day
+  var newIdx = String(Object.keys(d[day]).length);
+  if(!d[day])d[day]={};
+  d[day][newIdx] = src;
+  sm(mo, d);
+  toast('Venda clonada!');
+  renderSales();
+}
+</script>
+<script>
+function isCardEditing(idx){
+  var btn=document.getElementById('editbtn_'+idx);
+  return btn&&btn.textContent==='SALVAR';
+}
+function setEntregueSelect(sel){
+  var day=parseInt(sel.dataset.day);
+  var idx=sel.dataset.idx;
+  var fg=sel.closest('.fg');
+  var dateInp=fg?fg.querySelector('input[data-fk]'):null;
+  var fk=dateInp?dateInp.getAttribute('data-fk'):'data_entrega';
+  var val=sel.value;
+  if(val==='devolvido'){
+    if(dateInp){dateInp.style.display='inline-block';}
+    setF(day,idx,fk,'DEVOLVIDO');
+  } else if(val==='sim'){
+    if(dateInp){
+      dateInp.style.display='inline-block';
+      if(!dateInp.value||dateInp.value==='NAO_ENTREGOU'||dateInp.value==='DEVOLVIDO'){
+        dateInp.value='';
+        setF(day,idx,fk,'SIM_PENDENTE');
+      }
+      setTimeout(function(){dateInp.focus();},50);
+    }
+  } else {
+    if(dateInp){dateInp.style.display='none';dateInp.value='';}
+    setF(day,idx,fk,'NAO_ENTREGOU');
+  }
+}
+
+function setEntregueNFSelect(sel){
+  var inp=document.getElementById('nf_de_data');
+  if(sel.value==='nao'){
+    if(inp){inp.style.display='none';inp.value='NAO_ENTREGOU';}
+  } else {
+    if(inp){inp.style.display='inline-block';inp.value='';setTimeout(function(){inp.focus();},50);}
+  }
+}
+</script>
+<script>
+// Fix data_venda format in localStorage on load
+(function(){
+  try{
+    for(var k in localStorage){
+      if(k.indexOf('pnv3:')===0){
+        var d=JSON.parse(localStorage.getItem(k));
+        if(!d||typeof d!=='object')continue;
+        var changed=false;
+        Object.keys(d).forEach(function(day){
+          if(!d[day]||typeof d[day]!=='object')return;
+          Object.keys(d[day]).forEach(function(idx){
+            var e=d[day][idx];
+            if(!e)return;
+            if(e.data_venda&&e.data_venda.indexOf('/')===-1){
+              if(e.data_venda.length===8)
+                e.data_venda=e.data_venda.substring(0,2)+'/'+e.data_venda.substring(2,4)+'/'+e.data_venda.substring(4,8);
+              else
+                delete e.data_venda;
+              changed=true;
+            }
+          });
+        });
+        if(changed)localStorage.setItem(k,JSON.stringify(d));
+      }
+    }
+  }catch(ex){}
+})();
+</script>
+<script>
+// Migrate: set garantia='NÃO' for all entries that don't have it
+(function migrateGarantia(){
+  MONTHS.forEach(function(mo){
+    var data=lm(mo.n);var changed=false;
+    Object.keys(data).forEach(function(day){
+      if(!data[day]||typeof data[day]!=='object')return;
+      Object.keys(data[day]).forEach(function(idx){
+        var e=data[day][idx];
+        if(e&&typeof e==='object'&&!e.garantia){
+          e.garantia='NÃO';changed=true;
+        }
+      });
+    });
+    if(changed){try{localStorage.setItem(sk(mo.n),JSON.stringify(data));}catch(err){}}
+  });
+})();
+// Re-render graf — now handled by inicializarApp()
+</script>
+
+<script>
+// ============================================================
+// SUPABASE INTEGRATION
+// ============================================================
+const SUPA_URL = 'https://lylpmthnfkwfhtadhwiw.supabase.co';
+const SUPA_KEY = 'sb_publishable_FEft1bBnCI7-g5Z_j9Dr-Q_cZofWoQz';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+var _currentUser = null;
+
+async function fazerLogin(){
+  var email=document.getElementById('login-email').value.trim();
+  var pass=document.getElementById('login-pass').value;
+  var errEl=document.getElementById('login-error');
+  var btn=document.getElementById('login-btn');
+  if(!email||!pass){errEl.textContent='Preencha e-mail e senha.';return;}
+  btn.textContent='Entrando...';btn.disabled=true;
+  var {error}=await supa.auth.signInWithPassword({email,password:pass});
+  btn.textContent='Entrar';btn.disabled=false;
+  if(error){errEl.textContent='E-mail ou senha incorretos.';return;}
+  errEl.textContent='';
+}
+
+async function fazerLogout(){
+  await supa.auth.signOut();
+  _appInitialized=false;
+}
+
+// Handle Enter key on login
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&document.getElementById('login-screen').style.display!=='none')fazerLogin();
+});
+
+supa.auth.onAuthStateChange(function(event,session){
+  if(session&&session.user){
+    _currentUser=session.user;
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('user-bar').style.display='flex';
+    document.getElementById('user-email-display').textContent=session.user.email;
+    inicializarApp();
+  } else {
+    _currentUser=null;
+    document.getElementById('login-screen').style.display='flex';
+    document.getElementById('user-bar').style.display='none';
+  }
+});
+
+function setSyncStatus(msg,color){
+  var el=document.getElementById('sync-indicator');
+  if(el){el.textContent=msg;el.style.color=color||'rgba(255,255,255,.6)';}
+}
+
+async function smSupabase(m,d){
+  setSyncStatus('Salvando...','#FFD43B');
+  try{
+    var ops=[];
+    Object.keys(d).forEach(function(dia){
+      if(!d[dia]||typeof d[dia]!=='object')return;
+      Object.keys(d[dia]).forEach(function(idx){
+        if(!d[dia][idx])return;
+        ops.push({mes:m,dia:parseInt(dia),idx:idx,dados:d[dia][idx],updated_at:new Date().toISOString()});
+      });
+    });
+    if(ops.length>0){
+      var {error}=await supa.from('vendas').upsert(ops,{onConflict:'mes,dia,idx'});
+      if(error)throw error;
+    }
+    setSyncStatus('✓ Salvo','#1D9E75');
+    setTimeout(function(){setSyncStatus('');},2000);
+  }catch(e){setSyncStatus('⚠ Erro','#C0392B');console.error(e);}
+}
+
+async function lmSupabase(m){
+  try{
+    var {data,error}=await supa.from('vendas').select('dia,idx,dados').eq('mes',m);
+    if(error)throw error;
+    var r={};
+    (data||[]).forEach(function(row){
+      if(!r[row.dia])r[row.dia]={};
+      r[row.dia][row.idx]=row.dados;
+    });
+    return r;
+  }catch(e){console.error(e);return {};}
+}
+
+async function smConfigSupabase(chave,dados){
+  try{await supa.from('configuracoes').upsert({chave:chave,dados:dados,updated_at:new Date().toISOString()},{onConflict:'chave'});}
+  catch(e){console.error(e);}
+}
+
+async function lmConfigSupabase(chave){
+  try{
+    var {data,error}=await supa.from('configuracoes').select('dados').eq('chave',chave).single();
+    if(error||!data)return null;
+    return data.dados;
+  }catch(e){return null;}
+}
+
+function iniciarRealtime(){
+  supa.channel('db-changes')
+    .on('postgres_changes',{event:'*',schema:'public',table:'vendas'},function(payload){
+      var mes=payload.new?payload.new.mes:(payload.old?payload.old.mes:null);
+      if(!mes)return;
+      delete _regCache[mes];
+      lmSupabase(mes).then(function(d){
+        _regCache[mes]=d;
+        try{localStorage.setItem(sk(mes),JSON.stringify(d));}catch(e){}
+        if(mes===curMonth){
+          md=d;
+          if(curNav==='reg'){renderSales();renderBadges();updSummary();}
+          if(curNav==='graf'){buildGrafMotors();renderGraf();}
+        }
+      });
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'configuracoes'},function(){
+      _precCache=null;_precosCache=null;_impCache=null;_impMeCache=null;_precMeCache=null;
+      if(curNav==='prec')renderPrec();
+      if(curNav==='precos')renderPrecos();
+      if(curNav==='imp')renderImp();
+      if(curNav==='imp-me')renderImpMe();
+      if(curNav==='ml-me')renderPrecMe();
+    })
+    .subscribe();
+}
+
+async function setPresenca(cardId){
+  if(!_currentUser)return;
+  await supa.from('presenca').upsert({id:_currentUser.id,usuario:_currentUser.email,card_id:cardId,updated_at:new Date().toISOString()},{onConflict:'id'});
+}
+
+function iniciarPresenca(){
+  setInterval(async function(){
+    var {data}=await supa.from('presenca').select('*').gt('updated_at',new Date(Date.now()-20000).toISOString());
+    var lista=data||[];
+    // Remove badges antigos
+    document.querySelectorAll('.presenca-badge').forEach(function(b){
+      var card=b.closest('[id^="ec_"]');
+      if(!card)return;
+      var cid=card.id.replace('ec_','');
+      var ainda=lista.some(function(p){return p.card_id===cid&&p.id!==_currentUser.id;});
+      if(!ainda)b.remove();
+    });
+    // Adicionar badges
+    lista.forEach(function(p){
+      if(p.id===_currentUser.id||!p.card_id)return;
+      var card=document.getElementById('ec_'+p.card_id);
+      if(!card)return;
+      if(!card.querySelector('.presenca-badge')){
+        var b=document.createElement('div');
+        b.className='presenca-badge';
+        b.style.cssText='position:absolute;top:4px;left:4px;background:#FFD43B;color:#1a1a18;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;z-index:10;pointer-events:none;';
+        card.style.position='relative';
+        card.appendChild(b);
+      }
+      card.querySelector('.presenca-badge').textContent='✏️ '+p.usuario.split('@')[0]+' editando';
+    });
+  },5000);
+}
+
+function patchStorageFunctions(){
+  var _smOrig=sm;
+  sm=function(m,d){
+    _regCache[m]=d;
+    try{localStorage.setItem(sk(m),JSON.stringify(d));}catch(e){}
+    smSupabase(m,d);
+    var s=document.getElementById('sst');if(s){s.textContent='Salvo';setTimeout(function(){s.textContent='';},1500);}
+  };
+  var _lmOrig=lm;
+  lm=function(m){
+    if(_regCache[m]!==undefined)return _regCache[m];
+    var cached={};
+    try{var r=localStorage.getItem(sk(m));if(r)cached=JSON.parse(r);}catch(e){}
+    _regCache[m]=cached;
+    lmSupabase(m).then(function(d){
+      if(JSON.stringify(d)===JSON.stringify(cached))return; // no change
+      _regCache[m]=d;
+      try{localStorage.setItem(sk(m),JSON.stringify(d));}catch(e){}
+      if(m===curMonth){md=d;if(curNav==='reg'){renderSales();renderBadges();updSummary();}if(curNav==='graf'){buildGrafMotors();renderGraf();}}
+    });
+    return cached;
+  };
+  smPrec=function(d){_precCache=d;try{localStorage.setItem('pnv3:prec',JSON.stringify(d));}catch(e){}smConfigSupabase('prec',d);};
+  smPrecos=function(d){_precosCache=d;try{localStorage.setItem('pnv3:precos',JSON.stringify(d));}catch(e){}smConfigSupabase('precos',d);};
+  smImp=function(d){_impCache=d;try{localStorage.setItem('pnv3:imp',JSON.stringify(d));}catch(e){}smConfigSupabase('imp',d);};
+  smImpMe=function(d){_impMeCache=d;try{localStorage.setItem('pnv3:imp_me',JSON.stringify(d));}catch(e){}smConfigSupabase('imp_me',d);};
+  lmPrec=function(){if(_precCache)return _precCache;try{var r=localStorage.getItem('pnv3:prec');if(r)return(_precCache=JSON.parse(r));}catch(e){}lmConfigSupabase('prec').then(function(d){if(d){_precCache=d;try{localStorage.setItem('pnv3:prec',JSON.stringify(d));}catch(e){}if(curNav==='prec')renderPrec();}});return{};};
+  lmPrecos=function(){if(_precosCache)return _precosCache;try{var r=localStorage.getItem('pnv3:precos');if(r)return(_precosCache=JSON.parse(r));}catch(e){}lmConfigSupabase('precos').then(function(d){if(d){_precosCache=d;try{localStorage.setItem('pnv3:precos',JSON.stringify(d));}catch(e){}if(curNav==='precos')renderPrecos();}});return{};};
+  lmImp=function(){if(_impCache)return _impCache;try{var r=localStorage.getItem('pnv3:imp');if(r)return(_impCache=JSON.parse(r));}catch(e){}lmConfigSupabase('imp').then(function(d){if(d){_impCache=d;try{localStorage.setItem('pnv3:imp',JSON.stringify(d));}catch(e){}if(curNav==='imp')renderImp();}});return{};};
+  lmImpMe=function(){if(_impMeCache)return _impMeCache;try{var r=localStorage.getItem('pnv3:imp_me');if(r)return(_impMeCache=JSON.parse(r));}catch(e){}lmConfigSupabase('imp_me').then(function(d){if(d){_impMeCache=d;try{localStorage.setItem('pnv3:imp_me',JSON.stringify(d));}catch(e){}if(curNav==='imp-me')renderImpMe();}});return{};};
+  var _togOrig=toggleEditCard;
+  toggleEditCard=function(btn){
+    _togOrig(btn);
+    var idx=btn.getAttribute('data-idx');
+    setPresenca(btn.textContent==='SALVAR'?idx:null);
+  };
+}
+
+async function migrarDadosLocais(){
+  var temDados=false;
+  for(var m=4;m<=12;m++){if(localStorage.getItem('pnv3:'+m)){temDados=true;break;}}
+  if(!temDados)return;
+  setSyncStatus('Migrando dados locais...','#FFD43B');
+  var total=0;
+  for(var m=4;m<=12;m++){
+    var raw=localStorage.getItem('pnv3:'+m);
+    if(!raw)continue;
+    try{
+      var d=JSON.parse(raw);var ops=[];
+      Object.keys(d).forEach(function(dia){
+        if(!d[dia])return;
+        Object.keys(d[dia]).forEach(function(idx){
+          if(!d[dia][idx])return;
+          ops.push({mes:m,dia:parseInt(dia),idx:idx,dados:d[dia][idx],updated_at:new Date().toISOString()});
+          total++;
+        });
+      });
+      if(ops.length)await supa.from('vendas').upsert(ops,{onConflict:'mes,dia,idx'});
+    }catch(e){console.error(e);}
+  }
+  var cfgs=['prec','precos','imp','imp_me'];
+  for(var i=0;i<cfgs.length;i++){
+    var r=localStorage.getItem('pnv3:'+cfgs[i]);
+    if(r)try{await supa.from('configuracoes').upsert({chave:cfgs[i],dados:JSON.parse(r),updated_at:new Date().toISOString()},{onConflict:'chave'});}catch(e){}
+  }
+  if(total>0)toast(total+' vendas migradas para a nuvem!');
+}
+
+var _appInitialized=false;
+async function inicializarApp(){
+  if(_appInitialized)return;
+  _appInitialized=true;
+  await migrarDadosLocais();
+  setSyncStatus('Carregando...','#FFD43B');
+  var d=await lmSupabase(TM);
+  if(Object.keys(d).length>0){_regCache[TM]=d;try{localStorage.setItem(sk(TM),JSON.stringify(d));}catch(e){}}
+  // Load all configs from Supabase
+  var cfgMap={prec:'_precCache',precos:'_precosCache',imp:'_impCache',imp_me:'_impMeCache'};
+  for(var chave in cfgMap){
+    var val=await lmConfigSupabase(chave);
+    if(val){
+      if(chave==='prec')_precCache=val;
+      if(chave==='precos')_precosCache=val;
+      if(chave==='imp')_impCache=val;
+      if(chave==='imp_me')_impMeCache=val;
+      try{localStorage.setItem('pnv3:'+chave,JSON.stringify(val));}catch(e){}
+    }
+  }
+  setSyncStatus('');
+  patchStorageFunctions();
+  iniciarRealtime();
+  iniciarPresenca();
+  curMonth=TM;curDay=TD;md=lm(TM);
+  buildMonthSel();buildDaySel();
+  updDynFilters();buildGrafMotors();
+  renderBadges();renderAddBtn();updSummary();updTopBtn();
+  var _geEl=document.getElementById('gf-entrega');if(_geEl)_geEl.value='sim_nao';
+  switchNav('graf');
+  setTimeout(function(){if(curNav==='graf'){buildGrafMotors();renderGraf();}},0);
+}
+</script>
+
+</body>
+</html>
